@@ -74,11 +74,11 @@ class _StaffDashboardState extends State<StaffDashboard> {
           children: [
             Text("Alta Rápida de Cliente", style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 15),
-            TextField(controller: nombreCtrl, decoration: InputDecoration(hintText: 'Nombre completo', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none))),
+            TextField(autofocus: true, controller: nombreCtrl, decoration: InputDecoration(labelText: 'Nombre completo', hintText: 'Nombre completo', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none))),
             const SizedBox(height: 10),
-            TextField(controller: emailCtrl, keyboardType: TextInputType.emailAddress, decoration: InputDecoration(hintText: 'Email', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none))),
+            TextField(controller: emailCtrl, keyboardType: TextInputType.emailAddress, decoration: InputDecoration(labelText: 'Email', hintText: 'Email', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none))),
             const SizedBox(height: 10),
-            TextField(controller: passCtrl, decoration: InputDecoration(hintText: 'Contraseña', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none))),
+            TextField(controller: passCtrl, decoration: InputDecoration(labelText: 'Contraseña', hintText: 'Contraseña', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none))),
             const SizedBox(height: 20),
             SizedBox(width: double.infinity, height: 50, child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor), onPressed: () async {
               if (nombreCtrl.text.isEmpty || emailCtrl.text.isEmpty || passCtrl.text.isEmpty) return;
@@ -118,7 +118,10 @@ class _StaffDashboardState extends State<StaffDashboard> {
                     decoration: InputDecoration(hintText: "¿Qué quieres comunicar al gimnasio?", filled: true, fillColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1), border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none)),
                   ),
                   const SizedBox(height: 15),
-                  InkWell(
+                  Semantics(
+                    label: 'Añadir imagen a la publicación',
+                    button: true,
+                    child: InkWell(
                       onTap: () async {
                         final picker = ImagePicker();
                         final XFile? foto = await picker.pickImage(source: ImageSource.gallery);
@@ -131,6 +134,7 @@ class _StaffDashboardState extends State<StaffDashboard> {
                             ? Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.add_photo_alternate, color: Theme.of(context).primaryColor), const SizedBox(width: 10), const Text("Añadir Foto", style: TextStyle(color: Colors.grey))])
                             : ClipRRect(borderRadius: BorderRadius.circular(15), child: Image.file(File(fotoSeleccionada!.path), fit: BoxFit.cover)),
                       )
+                    ),
                   ),
                   const SizedBox(height: 20),
                   SizedBox(
@@ -208,13 +212,16 @@ class _StaffDashboardState extends State<StaffDashboard> {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(15), decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(15), border: Border.all(color: color.withValues(alpha: 0.3), width: 2)),
-        child: Column(children: [Text(titulo, style: const TextStyle(color: Colors.grey, fontSize: 10)), const SizedBox(height: 8), Text(valor, style: TextStyle(color: color, fontSize: 20, fontWeight: FontWeight.bold))]),
+        child: MergeSemantics(child: Column(children: [Text(titulo, style: const TextStyle(color: Colors.grey, fontSize: 10)), const SizedBox(height: 8), Text(valor, style: TextStyle(color: color, fontSize: 20, fontWeight: FontWeight.bold))])),
       ),
     );
   }
 
   Widget _buildBotonAccion(String titulo, IconData icono, Color color, VoidCallback onTap) {
-    return InkWell(
+    return Semantics(
+      label: titulo,
+      button: true,
+      child: InkWell(
       onTap: onTap, borderRadius: BorderRadius.circular(15),
       child: Container(
         decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(15), border: Border.all(color: Colors.white12)),
@@ -227,6 +234,7 @@ class _StaffDashboardState extends State<StaffDashboard> {
           ],
         ),
       ),
+    ),
     );
   }
 }

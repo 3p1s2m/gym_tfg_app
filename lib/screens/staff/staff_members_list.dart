@@ -44,7 +44,8 @@ class _StaffMembersListState extends State<StaffMembersList> {
           children: [
             Text("Asignar Entrenador a ${miembro['nombre']}", style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 15),
-            ...coaches.map((c) => ListTile(
+            ...coaches.map((c) => MergeSemantics(
+              child: ListTile(
               leading: const CircleAvatar(child: Icon(Icons.sports)),
               title: Text(c["nombre"]),
               subtitle: Column(
@@ -81,7 +82,7 @@ class _StaffMembersListState extends State<StaffMembersList> {
                   if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ Entrenador asignado'), backgroundColor: Colors.green));
                 }
               },
-            ))
+            )))
           ],
         ),
       ),
@@ -306,7 +307,9 @@ class _StaffMembersListState extends State<StaffMembersList> {
                 // 2. Mostrar lista de coaches
                 showDialog(context: context, builder: (context) => AlertDialog(
                   backgroundColor: Theme.of(context).colorScheme.surface, title: const Text("Elegir Coach"),
-                  content: SizedBox(width: double.maxFinite, child: ListView.builder(
+                  content: FocusTraversalGroup(
+                    policy: ReadingOrderTraversalPolicy(),
+                    child: SizedBox(width: double.maxFinite, child: ListView.builder(
                     shrinkWrap: true, itemCount: coaches.length,
                     itemBuilder: (c, i) => ListTile(title: Text(coaches[i]["nombre"]), onTap: () async {
                       Navigator.pop(context);
@@ -314,7 +317,7 @@ class _StaffMembersListState extends State<StaffMembersList> {
                       final resp = await http.put(url, headers: {'Authorization': 'Bearer $_token'});
                       if(resp.statusCode == 200) { _cargarSocios(); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('✅ Entrenador asignado'))); }
                     }),
-                  )),
+                  ))),
                 ));
               },
             ),
@@ -327,7 +330,10 @@ class _StaffMembersListState extends State<StaffMembersList> {
                 TextEditingController passCtrl = TextEditingController();
                 showDialog(context: context, builder: (context) => AlertDialog(
                   backgroundColor: Theme.of(context).colorScheme.surface, title: Text("Nueva contraseña para ${miembro['nombre']}", style: const TextStyle(fontSize: 14)),
-                  content: TextField(controller: passCtrl, decoration: const InputDecoration(hintText: "Ej: 123456")),
+                  content: FocusTraversalGroup(
+                    policy: ReadingOrderTraversalPolicy(),
+                    child: TextField(autofocus: true, controller: passCtrl, decoration: const InputDecoration(labelText: "Nueva contraseña", hintText: "Ej: 123456")),
+                  ),
                   actions: [
                     TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
                     ElevatedButton(onPressed: () async {
@@ -378,6 +384,7 @@ class _StaffMembersListState extends State<StaffMembersList> {
                 ),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
+                        tooltip: 'Borrar búsqueda',
                         icon: Icon(
                           Icons.clear,
                           color: Theme.of(context).colorScheme.primary,
@@ -511,7 +518,7 @@ class _StaffMembersListState extends State<StaffMembersList> {
                                       ),
                                   ],
                                 ),
-                                trailing: const Icon(Icons.more_vert),
+                                trailing: Semantics(label: 'Ver opciones del miembro', button: true, child: const Icon(Icons.more_vert)),
                                 onTap: () => _mostrarOpcionesSocio(miembro),
                               ),
                             );

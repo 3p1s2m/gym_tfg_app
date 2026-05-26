@@ -181,6 +181,7 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen> {
                   child: TextField(
                     style: TextStyle(color: Theme.of(context).primaryColor),
                     decoration: InputDecoration(
+                      labelText: 'Buscar ejercicio',
                       hintText: "Buscar...",
                       hintStyle: const TextStyle(color: Colors.grey),
                       prefixIcon: Icon(Icons.search, color: Theme.of(context).primaryColor),
@@ -196,12 +197,16 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                GestureDetector(
-                  onTap: _abrirPanelFiltros,
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: Theme.of(context).primaryColor.withValues(alpha:0.2), borderRadius: BorderRadius.circular(12)),
-                    child: Icon(Icons.tune, color: Theme.of(context).primaryColor),
+                Semantics(
+                  label: 'Filtrar ejercicios',
+                  button: true,
+                  child: GestureDetector(
+                    onTap: _abrirPanelFiltros,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(color: Theme.of(context).primaryColor.withValues(alpha:0.2), borderRadius: BorderRadius.circular(12)),
+                      child: Icon(Icons.tune, color: Theme.of(context).primaryColor),
+                    ),
                   ),
                 )
               ],
@@ -253,7 +258,7 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(10),
                           child: tieneFoto
-                              ? Image.network(ejercicio["urlMedia"], width: 70, height: 70, fit: BoxFit.cover, errorBuilder: (c,e,s) => _placeholder())
+                              ? Image.network(ejercicio["urlMedia"], width: 70, height: 70, fit: BoxFit.cover, semanticLabel: ejercicio["nombre"], errorBuilder: (c,e,s) => _placeholder())
                               : _placeholder(),
                         ),
                         const SizedBox(width: 15),
@@ -270,6 +275,7 @@ class _ExerciseSelectionScreenState extends State<ExerciseSelectionScreen> {
                         ),
                         // BOTÓN DE AÑADIR (Solo este botón añade)
                         IconButton(
+                          tooltip: 'Añadir ejercicio a la rutina',
                           icon: Icon(Icons.add_circle, color: Theme.of(context).primaryColor, size: 30),
                           onPressed: () {
                             Navigator.pop(context, ejercicio); // Escupe el ejercicio a la rutina

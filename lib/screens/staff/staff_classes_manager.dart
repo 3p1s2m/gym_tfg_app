@@ -86,7 +86,9 @@ class _StaffClassesManagerState extends State<StaffClassesManager> {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) => StatefulBuilder(
           builder: (context, setModalState) {
-            return Padding(
+            return FocusTraversalGroup(
+              policy: ReadingOrderTraversalPolicy(),
+              child: Padding(
               padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 20, right: 20, top: 20),
               child: Column(
                 mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start,
@@ -157,6 +159,7 @@ class _StaffClassesManagerState extends State<StaffClassesManager> {
                   const SizedBox(height: 20),
                 ],
               ),
+              ),
             );
           }
       ),
@@ -167,18 +170,25 @@ class _StaffClassesManagerState extends State<StaffClassesManager> {
     showModalBottomSheet(
         context: context, backgroundColor: Theme.of(context).colorScheme.surface,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-        builder: (context) => ListView(
+        builder: (context) => FocusTraversalGroup(
+          policy: ReadingOrderTraversalPolicy(),
+          child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
             Text("Elige una Plantilla", style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             ..._plantillas.map((p) => ListTile(
-              leading: CircleAvatar(backgroundImage: CachedNetworkImageProvider(p["imagen"]!)),
+              leading: Semantics(
+                label: 'Imagen de plantilla ${p["nombre"]}',
+                image: true,
+                child: CircleAvatar(backgroundImage: CachedNetworkImageProvider(p["imagen"]!)),
+              ),
               title: Text(p["nombre"]!, style: const TextStyle(fontWeight: FontWeight.bold)),
               trailing: Icon(Icons.add_circle, color: Theme.of(context).primaryColor),
               onTap: () { Navigator.pop(context); _abrirCrearClase(p); },
             ))
           ],
+          ),
         )
     );
   }
@@ -206,7 +216,9 @@ class _StaffClassesManagerState extends State<StaffClassesManager> {
       appBar: AppBar(title: const Text('GESTIÓN DE CLASES', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2.0)), centerTitle: true, elevation: 0, backgroundColor: Theme.of(context).appBarTheme.backgroundColor, foregroundColor: Theme.of(context).appBarTheme.foregroundColor),
       floatingActionButton: FloatingActionButton.extended(backgroundColor: Theme.of(context).primaryColor, onPressed: _seleccionarPlantilla, icon: const Icon(Icons.add, color: Colors.black), label: const Text("Nueva Clase", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold))),
 
-      body: Column(
+      body: FocusTraversalGroup(
+        policy: ReadingOrderTraversalPolicy(),
+        child: Column(
         children: [
           // 👇 LA SEMANA IGUAL QUE EN EL MURO SOCIAL
           Padding(
@@ -215,11 +227,16 @@ class _StaffClassesManagerState extends State<StaffClassesManager> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: _proximos7Dias.map((fecha) {
                 bool activo = _esMismoDia(fecha, _fechaActiva);
-                return GestureDetector(
-                  onTap: () => setState(() => _fechaActiva = fecha),
-                  child: CircleAvatar(
-                    radius: 20, backgroundColor: activo ? Theme.of(context).primaryColor : Colors.transparent,
-                    child: Text(["L", "M", "M", "J", "V", "S", "D"][fecha.weekday - 1], style: TextStyle(color: activo ? Colors.black : Colors.grey, fontWeight: FontWeight.bold, fontSize: 16)),
+                const nombresDias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+                return Semantics(
+                  label: nombresDias[fecha.weekday - 1],
+                  button: true,
+                  child: GestureDetector(
+                    onTap: () => setState(() => _fechaActiva = fecha),
+                    child: CircleAvatar(
+                      radius: 20, backgroundColor: activo ? Theme.of(context).primaryColor : Colors.transparent,
+                      child: Text(["L", "M", "M", "J", "V", "S", "D"][fecha.weekday - 1], style: TextStyle(color: activo ? Colors.black : Colors.grey, fontWeight: FontWeight.bold, fontSize: 16)),
+                    ),
                   ),
                 );
               }).toList(),
@@ -249,7 +266,7 @@ class _StaffClassesManagerState extends State<StaffClassesManager> {
                       children: [
                         Row(
                           children: [
-                            Expanded(flex: 4, child: ColorFiltered(colorFilter: const ColorFilter.mode(Colors.grey, BlendMode.saturation), child: CachedNetworkImage(imageUrl: clase["imagenUrl"] ?? "", fit: BoxFit.cover, height: double.infinity, errorWidget: (context, url, error) => Container(color: Colors.black26)))),
+                            Expanded(flex: 4, child: ColorFiltered(colorFilter: const ColorFilter.mode(Colors.grey, BlendMode.saturation), child: CachedNetworkImage(imageUrl: clase["imagenUrl"] ?? "", fit: BoxFit.cover, height: double.infinity, errorWidget: (context, url, error) => Container(color: Colors.black26), imageBuilder: (context, imageProvider) => Semantics(label: 'Imagen de ${clase["nombre"] ?? "la clase"}', child: Image(image: imageProvider, fit: BoxFit.cover, height: double.infinity))))),
                             Expanded(flex: 6, child: Container(decoration: BoxDecoration(border: Border(right: BorderSide(color: colorClase, width: 6))), padding: const EdgeInsets.all(15), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(_formatearHora(d), style: const TextStyle(color: Colors.grey, fontSize: 14)), Text("${clase["ocupadas"] ?? 0} / ${clase["totales"] ?? 20} plazas", style: TextStyle(color: colorClase, fontSize: 12, fontWeight: FontWeight.bold))]), const Spacer(), Text(clase["nombre"] ?? "Clase", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), const SizedBox(height: 4), Text(clase["sala"] ?? "Sala 1", style: const TextStyle(color: Colors.grey, fontSize: 14))]))),
                           ],
                         ),
@@ -258,6 +275,7 @@ class _StaffClassesManagerState extends State<StaffClassesManager> {
                           top: 5,
                           right: 15,
                           child: IconButton(
+                              tooltip: 'Eliminar clase',
                               icon: const Icon(Icons.delete, color: Colors.redAccent),
                               onPressed: () => _eliminarClase(clase["idClase"])
                           ),
@@ -270,6 +288,7 @@ class _StaffClassesManagerState extends State<StaffClassesManager> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

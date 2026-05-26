@@ -90,52 +90,67 @@ class _CoachCatalogScreenState extends State<CoachCatalogScreen> {
       ),
       body: _cargando
           ? Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor))
-          : ListView.builder(
-        padding: const EdgeInsets.all(15),
-        itemCount: _entrenadores.length,
-        itemBuilder: (context, index) {
-          final coach = _entrenadores[index];
-          return Card(
-            color: Theme.of(context).colorScheme.surface,
-            margin: const EdgeInsets.only(bottom: 20),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: Colors.white12)),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      CircleAvatar(radius: 30, backgroundColor: Theme.of(context).primaryColor.withValues(alpha:0.2), child: Icon(Icons.sports, size: 30, color: Theme.of(context).primaryColor)),
-                      const SizedBox(width: 15),
-                      Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+          : FocusTraversalGroup(
+            policy: ReadingOrderTraversalPolicy(),
+            child: ListView.builder(
+              padding: const EdgeInsets.all(15),
+              itemCount: _entrenadores.length,
+              itemBuilder: (context, index) {
+                final coach = _entrenadores[index];
+                final especialidad = coach["especialidad"] ?? "Preparador Físico General";
+                final biografia = coach["biografia"] ?? "Este entrenador aún no ha escrito su biografía, pero está listo para ayudarte a conseguir tus objetivos.";
+                return Semantics(
+                  label: '${coach["nombre"]}, $especialidad',
+                  child: Card(
+                    color: Theme.of(context).colorScheme.surface,
+                    margin: const EdgeInsets.only(bottom: 20),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: Colors.white12)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
-                              Text(coach["nombre"], style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                              Text(coach["especialidad"] ?? "Preparador Físico General", style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold, fontSize: 13)),
+                              Semantics(
+                                label: 'Icono de entrenador',
+                                excludeSemantics: true,
+                                child: CircleAvatar(radius: 30, backgroundColor: Theme.of(context).primaryColor.withValues(alpha:0.2), child: Icon(Icons.sports, size: 30, color: Theme.of(context).primaryColor)),
+                              ),
+                              const SizedBox(width: 15),
+                              Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(coach["nombre"], style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                                      Text(especialidad, style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold, fontSize: 13)),
+                                    ],
+                                  )
+                              )
                             ],
+                          ),
+                          const SizedBox(height: 15),
+                          Text(biografia, style: const TextStyle(color: Colors.grey, height: 1.5)),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            width: double.infinity, height: 45,
+                            child: Tooltip(
+                              message: 'Seleccionar a ${coach["nombre"]} como entrenador',
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(backgroundColor: Colors.white10, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                                onPressed: () => _mostrarConfirmacion(coach),
+                                child: Text("SELECCIONAR", style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold)),
+                              ),
+                            ),
                           )
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 15),
-                  Text(coach["biografia"] ?? "Este entrenador aún no ha escrito su biografía, pero está listo para ayudarte a conseguir tus objetivos.", style: const TextStyle(color: Colors.grey, height: 1.5)),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity, height: 45,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.white10, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                      onPressed: () => _mostrarConfirmacion(coach),
-                      child: Text("SELECCIONAR", style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
                     ),
-                  )
-                ],
-              ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
+          ),
     );
   }
 }

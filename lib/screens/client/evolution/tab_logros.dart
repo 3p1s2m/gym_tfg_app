@@ -88,7 +88,7 @@ class _TabLogrosState extends State<TabLogros> {
 
   @override
   Widget build(BuildContext context) {
-    if (_cargandoLogros) return const Center(child: CircularProgressIndicator(color: Colors.cyanAccent));
+    if (_cargandoLogros) return Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor));
     if (_catalogoLogros.isEmpty) return const Center(child: Text("No hay logros disponibles", style: TextStyle(color: Colors.grey)));
 
     return GridView.builder(
@@ -109,7 +109,10 @@ class _TabLogrosState extends State<TabLogros> {
         return Column(
           children: [
             Expanded(
-              child: GestureDetector(
+              child: Semantics(
+                label: "${logro["nombre"]}, ${estaDesbloqueado ? 'desbloqueado' : 'bloqueado'}, toca para ver detalles",
+                button: true,
+                child: GestureDetector(
                 onTap: () {
                   showDialog(
                       context: context,
@@ -129,10 +132,10 @@ class _TabLogrosState extends State<TabLogros> {
                                     alignment: Alignment.center,
                                     children: [
                                       estaDesbloqueado
-                                          ? Image.asset(rutaImagen, fit: BoxFit.cover)
+                                          ? Image.asset(rutaImagen, fit: BoxFit.cover, semanticLabel: '${logro["nombre"]} desbloqueado')
                                           : ColorFiltered(
                                         colorFilter: const ColorFilter.matrix([0.2126, 0.7152, 0.0722, 0, 0, 0.2126, 0.7152, 0.0722, 0, 0, 0.2126, 0.7152, 0.0722, 0, 0, 0, 0, 0, 0.4, 0]),
-                                        child: Image.asset(rutaImagen, fit: BoxFit.cover),
+                                        child: Image.asset(rutaImagen, fit: BoxFit.cover, semanticLabel: '${logro["nombre"]} bloqueado'),
                                       ),
                                       Icon(iconoInterno, size: 40, color: estaDesbloqueado ? Colors.white : Colors.white24)
                                     ],
@@ -161,10 +164,10 @@ class _TabLogrosState extends State<TabLogros> {
                           alignment: Alignment.center,
                           children: [
                             estaDesbloqueado
-                                ? Image.asset(rutaImagen)
+                                ? Image.asset(rutaImagen, semanticLabel: logro["nombre"])
                                 : ColorFiltered(
                               colorFilter: const ColorFilter.matrix([0.2126, 0.7152, 0.0722, 0, 0, 0.2126, 0.7152, 0.0722, 0, 0, 0.2126, 0.7152, 0.0722, 0, 0, 0, 0, 0, 0.4, 0]),
-                              child: Image.asset(rutaImagen),
+                              child: Image.asset(rutaImagen, semanticLabel: logro["nombre"]),
                             ),
                             Icon(iconoInterno, size: 24, color: estaDesbloqueado ? Colors.white : Colors.white24)
                           ],
@@ -175,8 +178,9 @@ class _TabLogrosState extends State<TabLogros> {
                 ),
               ),
             ),
+            ),
             const SizedBox(height: 8),
-            Text(logro["nombre"], textAlign: TextAlign.center, maxLines: 2, style: TextStyle(color: estaDesbloqueado ? Colors.white : Colors.white38, fontSize: 10, fontWeight: estaDesbloqueado ? FontWeight.bold : FontWeight.normal))
+            Text(logro["nombre"], textAlign: TextAlign.center, maxLines: 2, style: TextStyle(color: estaDesbloqueado ? Colors.white : Colors.white60, fontSize: 10, fontWeight: estaDesbloqueado ? FontWeight.bold : FontWeight.normal))
           ],
         );
       },

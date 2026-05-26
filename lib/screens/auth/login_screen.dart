@@ -108,14 +108,14 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.fitness_center, size: 80, color: Theme.of(context).primaryColor),
+              ExcludeSemantics(child: Icon(Icons.fitness_center, size: 80, color: Theme.of(context).primaryColor)),
               const SizedBox(height: 20),
               const Text('SYMMETRY', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: 2.0)),
               const SizedBox(height: 50),
 
               TextField(
                 controller: _emailController,
-                decoration: InputDecoration(hintText: 'Correo electrónico', hintStyle: const TextStyle(color: Colors.grey), filled: true, fillColor: Theme.of(context).colorScheme.surface, prefixIcon: const Icon(Icons.email, color: Colors.grey), border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none)),
+                decoration: InputDecoration(labelText: 'Correo electrónico', hintText: 'Correo electrónico', hintStyle: const TextStyle(color: Colors.grey), filled: true, fillColor: Theme.of(context).colorScheme.surface, prefixIcon: const Icon(Icons.email, color: Colors.grey), border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none)),
               ),
               const SizedBox(height: 20),
 
@@ -124,6 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 controller: _passwordController,
                 obscureText: _ocultarPassword, // 👈 Controlado por la variable
                 decoration: InputDecoration(
+                    labelText: 'Contraseña',
                     hintText: 'Contraseña',
                     hintStyle: const TextStyle(color: Colors.grey),
                     filled: true,
@@ -132,6 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     // 👇 EL BOTÓN DEL OJITO
                     suffixIcon: IconButton(
+                      tooltip: 'Mostrar u ocultar contraseña',
                       icon: Icon(_ocultarPassword ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
                       onPressed: () {
                         setState(() {
@@ -156,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(
                 width: double.infinity, height: 55,
                 child: _isLoading
-                    ? Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor))
+                    ? Semantics(label: 'Iniciando sesión, por favor espera', child: Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor)))
                     : ElevatedButton(
                   onPressed: _iniciarSesion,
                   style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)), elevation: 5),

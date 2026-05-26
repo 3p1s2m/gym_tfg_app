@@ -65,14 +65,19 @@ class _AdminUsersManagerState extends State<AdminUsersManager> {
         builder: (context) => AlertDialog(
           backgroundColor: Theme.of(context).colorScheme.surface,
           title: Text("Nueva contraseña para ${usuario['nombre']}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          content: TextField(
-              controller: passCtrl,
-              decoration: InputDecoration(
-                  hintText: "Escribe la nueva clave",
-                  filled: true,
-                  fillColor: Colors.white10,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)
-              )
+          content: FocusTraversalGroup(
+            policy: ReadingOrderTraversalPolicy(),
+            child: TextField(
+                autofocus: true,
+                controller: passCtrl,
+                decoration: InputDecoration(
+                    labelText: "Nueva contraseña",
+                    hintText: "Escribe la nueva clave",
+                    filled: true,
+                    fillColor: Colors.white10,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)
+                )
+            ),
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar", style: TextStyle(color: Colors.grey))),
@@ -114,7 +119,9 @@ class _AdminUsersManagerState extends State<AdminUsersManager> {
       context: context,
       backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => Padding(
+      builder: (context) => FocusTraversalGroup(
+        policy: ReadingOrderTraversalPolicy(),
+        child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -144,6 +151,7 @@ class _AdminUsersManagerState extends State<AdminUsersManager> {
             ),
           ],
         ),
+        ),
       ),
     );
   }
@@ -165,7 +173,9 @@ class _AdminUsersManagerState extends State<AdminUsersManager> {
           builder: (context, setModalState) {
             bool esCliente = rolSeleccionado == 'CLIENTE';
 
-            return Padding(
+            return FocusTraversalGroup(
+              policy: ReadingOrderTraversalPolicy(),
+              child: Padding(
               padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 20, right: 20, top: 20),
               child: SingleChildScrollView(
                 child: Column(
@@ -175,14 +185,14 @@ class _AdminUsersManagerState extends State<AdminUsersManager> {
                     const SizedBox(height: 20),
 
                     // DATOS BÁSICOS
-                    TextField(controller: nombreCtrl, decoration: InputDecoration(hintText: 'Nombre completo', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none))),
+                    TextField(controller: nombreCtrl, decoration: InputDecoration(labelText: 'Nombre completo', hintText: 'Nombre completo', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none))),
                     const SizedBox(height: 10),
-                    TextField(controller: emailCtrl, keyboardType: TextInputType.emailAddress, decoration: InputDecoration(hintText: 'Email', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none))),
+                    TextField(controller: emailCtrl, keyboardType: TextInputType.emailAddress, decoration: InputDecoration(labelText: 'Email', hintText: 'Email', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none))),
                     const SizedBox(height: 10),
-                    TextField(controller: passCtrl, obscureText: true, decoration: InputDecoration(hintText: 'Contraseña inicial', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none))),
+                    TextField(controller: passCtrl, obscureText: true, decoration: InputDecoration(labelText: 'Contraseña inicial', hintText: 'Contraseña inicial', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none))),
                     const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
-                      value: rolSeleccionado, dropdownColor: Theme.of(context).colorScheme.surface, decoration: InputDecoration(filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)),
+                      value: rolSeleccionado, dropdownColor: Theme.of(context).colorScheme.surface, decoration: InputDecoration(labelText: 'Rol del usuario', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)),
                       items: ['CLIENTE', 'ENTRENADOR', 'STAFF', 'ADMIN'].map((role) => DropdownMenuItem(value: role, child: Text(role))).toList(),
                       onChanged: (value) => setModalState(() => rolSeleccionado = value!),
                     ),
@@ -194,9 +204,9 @@ class _AdminUsersManagerState extends State<AdminUsersManager> {
                       const SizedBox(height: 10),
                       Row(
                         children: [
-                          Expanded(child: TextField(controller: pesoCtrl, keyboardType: TextInputType.number, decoration: InputDecoration(hintText: 'Peso (kg)', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)))),
+                          Expanded(child: TextField(controller: pesoCtrl, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'Peso (kg)', hintText: 'Peso (kg)', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)))),
                           const SizedBox(width: 10),
-                          Expanded(child: TextField(controller: alturaCtrl, keyboardType: TextInputType.number, decoration: InputDecoration(hintText: 'Altura (cm)', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)))),
+                          Expanded(child: TextField(controller: alturaCtrl, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'Altura (cm)', hintText: 'Altura (cm)', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)))),
                         ],
                       ),
                       const SizedBox(height: 10),
@@ -253,6 +263,7 @@ class _AdminUsersManagerState extends State<AdminUsersManager> {
                   ],
                 ),
               ),
+              ),
             );
           }
       ),
@@ -264,14 +275,14 @@ class _AdminUsersManagerState extends State<AdminUsersManager> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(title: const Text('DIRECTORIO', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2.0)), backgroundColor: Theme.of(context).appBarTheme.backgroundColor, foregroundColor: Theme.of(context).appBarTheme.foregroundColor, centerTitle: true, elevation: 0),
-      floatingActionButton: FloatingActionButton(backgroundColor: Theme.of(context).primaryColor, onPressed: _abrirCrearUsuario, child: const Icon(Icons.person_add, color: Colors.black)),
+      floatingActionButton: FloatingActionButton(tooltip: 'Crear nuevo usuario', backgroundColor: Theme.of(context).primaryColor, onPressed: _abrirCrearUsuario, child: const Icon(Icons.person_add, color: Colors.black)),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(15),
             child: Row(
               children: [
-                Expanded(flex: 6, child: TextField(decoration: InputDecoration(hintText: "Buscar...", prefixIcon: const Icon(Icons.search), filled: true, fillColor: Theme.of(context).colorScheme.surface, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none), contentPadding: const EdgeInsets.symmetric(vertical: 0)), onChanged: (val) { _busquedaActual = val.toLowerCase(); _aplicarFiltros(); })),
+                Expanded(flex: 6, child: TextField(decoration: InputDecoration(labelText: 'Buscar usuario', hintText: "Buscar...", prefixIcon: const Icon(Icons.search), filled: true, fillColor: Theme.of(context).colorScheme.surface, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none), contentPadding: const EdgeInsets.symmetric(vertical: 0)), onChanged: (val) { _busquedaActual = val.toLowerCase(); _aplicarFiltros(); })),
                 const SizedBox(width: 10),
                 Expanded(flex: 4, child: DropdownButtonFormField<String>(value: _filtroRol, dropdownColor: Theme.of(context).colorScheme.surface, decoration: InputDecoration(filled: true, fillColor: Theme.of(context).colorScheme.surface, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none), contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12)), items: ['Todos', 'Cliente', 'Entrenador', 'Staff', 'Admin'].map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(), onChanged: (v) { _filtroRol = v!; _aplicarFiltros(); })),
               ],
@@ -296,7 +307,7 @@ class _AdminUsersManagerState extends State<AdminUsersManager> {
                       subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(u['email'], style: const TextStyle(fontSize: 12, color: Colors.grey)), const SizedBox(height: 5), Row(children: [Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: cRol.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(4)), child: Text(rolStr, style: TextStyle(color: cRol, fontSize: 10, fontWeight: FontWeight.bold))), const SizedBox(width: 8), if (rolStr == 'CLIENTE') Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: esMoroso ? Colors.red.withValues(alpha: 0.2) : Colors.green.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(4)), child: Text(esMoroso ? 'IMPAGADO' : 'AL DÍA', style: TextStyle(color: esMoroso ? Colors.redAccent : Colors.greenAccent, fontSize: 10, fontWeight: FontWeight.bold)))])]),
 
                       // 👇 AHORA TOCA AQUÍ PARA ABRIR LAS OPCIONES
-                      trailing: const Icon(Icons.more_vert, color: Colors.grey),
+                      trailing: Semantics(label: 'Opciones del usuario', button: true, child: const Icon(Icons.more_vert, color: Colors.grey)),
                       onTap: () => _mostrarOpcionesUsuario(u),
                     ),
                   );

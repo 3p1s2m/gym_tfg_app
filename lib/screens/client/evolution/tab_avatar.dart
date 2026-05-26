@@ -121,7 +121,9 @@ class _TabAvatarState extends State<TabAvatar> with TickerProviderStateMixin {
       context: context, isScrollControlled: true, backgroundColor: const Color(0xFF1C1C1E),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (BuildContext context) {
-        return Padding(
+        return FocusTraversalGroup(
+          policy: ReadingOrderTraversalPolicy(),
+          child: Padding(
           padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, top: 25, left: 20, right: 20),
           child: Column(
             mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,19 +131,21 @@ class _TabAvatarState extends State<TabAvatar> with TickerProviderStateMixin {
               Text(zona == "Peso Corporal" ? "Evolución de Peso" : "Medidas: $zona", style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 24, fontWeight: FontWeight.bold)),
               const SizedBox(height: 20),
               if (medidasZona.isNotEmpty)
-                Row(
+                MergeSemantics(
+                  child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     Column(children: [const Text("DÍA 1", style: TextStyle(color: Colors.grey, fontSize: 10)), Text("$dia1", style: const TextStyle(color: Colors.grey, fontSize: 18, fontWeight: FontWeight.bold))]),
-                    const Icon(Icons.arrow_forward, color: Colors.white24),
+                    const ExcludeSemantics(child: Icon(Icons.arrow_forward, color: Colors.white24)),
                     Column(children: [const Text("ÚLTIMA", style: TextStyle(color: Colors.grey, fontSize: 10)), Text("$hoy", style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 18, fontWeight: FontWeight.bold))]),
                     Column(children: [const Text("EVOLUCIÓN", style: TextStyle(color: Colors.grey, fontSize: 10)), Text("$signo${diferencia.toStringAsFixed(1)} $unidad", style: TextStyle(color: diferencia >= 0 ? Colors.greenAccent : Colors.redAccent, fontSize: 18, fontWeight: FontWeight.bold))]),
                   ],
+                  ),
                 )
               else const Text("No hay registros. ¡Añade el primero!", style: TextStyle(color: Colors.grey)),
               const SizedBox(height: 25),
               if (medidasZona.length >= 2)
-                Container(height: 150, padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(15)), child: _buildGraficoMedidas(medidasZona, unidad)),
+                Container(height: 150, padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: Colors.black26, borderRadius: BorderRadius.circular(15)), child: ExcludeSemantics(child: _buildGraficoMedidas(medidasZona, unidad))),
               const SizedBox(height: 25),
               Row(
                 children: [
@@ -152,6 +156,7 @@ class _TabAvatarState extends State<TabAvatar> with TickerProviderStateMixin {
               ),
               const SizedBox(height: 30),
             ],
+          ),
           ),
         );
       },
@@ -189,7 +194,10 @@ class _TabAvatarState extends State<TabAvatar> with TickerProviderStateMixin {
     bool tieneDatos = _todasLasMedidas.any((m) => m["zona"] == zona);
     return Positioned(
       top: top, left: left,
-      child: GestureDetector(
+      child: Semantics(
+        label: "$zona, ${tieneDatos ? 'con datos registrados' : 'sin datos, toca para añadir'}, toca para ver medidas",
+        button: true,
+        child: GestureDetector(
         onTap: () => _abrirPanelZona(zona),
         child: AnimatedBuilder(
           animation: _glowAnimation,
@@ -207,6 +215,7 @@ class _TabAvatarState extends State<TabAvatar> with TickerProviderStateMixin {
           },
         ),
       ),
+    ),
     );
   }
 
@@ -240,7 +249,7 @@ class _TabAvatarState extends State<TabAvatar> with TickerProviderStateMixin {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        Positioned.fill(child: Image.asset(rutaCuerpoBase, fit: BoxFit.contain)),
+                        Positioned.fill(child: Image.asset(rutaCuerpoBase, fit: BoxFit.contain, semanticLabel: 'Figura corporal ${generoVisual == "hombre" ? "masculina" : "femenina"}, vista frontal')),
                         _buildPuntoInteractivo("Torso / Pecho", 130, 135),
                         _buildPuntoInteractivo("Cintura", 220, 135),
                         _buildPuntoInteractivo("Cadera", 260, 135),

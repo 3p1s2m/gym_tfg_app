@@ -69,21 +69,25 @@ class _DialogoCelebracionLogroState extends State<DialogoCelebracionLogro> {
               ),
             ),
             const SizedBox(height: 30),
-            AnimatedOpacity(
-              opacity: _revelado ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 500),
-              child: Column(
-                children: [
-                  Text(widget.logro["nombre"], textAlign: TextAlign.center, style: TextStyle(color: widget.colorBrillo, fontSize: 24, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 10),
-                  Text(widget.logro["descripcion"], textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70, fontSize: 15)),
-                  const SizedBox(height: 25),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: widget.colorBrillo.withValues(alpha:0.2), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                    onPressed: () => Navigator.pop(context),
-                    child: Text("Reclamar", style: TextStyle(color: widget.colorBrillo, fontWeight: FontWeight.bold)),
-                  )
-                ],
+            Semantics(
+              liveRegion: true,
+              label: _revelado ? 'Logro desbloqueado: ${widget.logro["nombre"] ?? ""}' : '',
+              child: AnimatedOpacity(
+                opacity: _revelado ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 500),
+                child: Column(
+                  children: [
+                    Text(widget.logro["nombre"], textAlign: TextAlign.center, style: TextStyle(color: widget.colorBrillo, fontSize: 24, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 10),
+                    Text(widget.logro["descripcion"], textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70, fontSize: 15)),
+                    const SizedBox(height: 25),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: widget.colorBrillo.withValues(alpha:0.2), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                      onPressed: () => Navigator.pop(context),
+                      child: Text("Reclamar", style: TextStyle(color: widget.colorBrillo, fontWeight: FontWeight.bold)),
+                    )
+                  ],
+                ),
               ),
             )
           ],
@@ -93,10 +97,12 @@ class _DialogoCelebracionLogroState extends State<DialogoCelebracionLogro> {
   }
 
   Widget _buildGemaGris(String ruta) {
-    return ColorFiltered(
-      key: const ValueKey(1),
-      colorFilter: const ColorFilter.matrix([0.2126, 0.7152, 0.0722, 0, 0, 0.2126, 0.7152, 0.0722, 0, 0, 0.2126, 0.7152, 0.0722, 0, 0, 0, 0, 0, 0.4, 0]),
-      child: Transform.scale(scale: 1.5, child: Image.asset(ruta)),
+    return ExcludeSemantics(
+      child: ColorFiltered(
+        key: const ValueKey(1),
+        colorFilter: const ColorFilter.matrix([0.2126, 0.7152, 0.0722, 0, 0, 0.2126, 0.7152, 0.0722, 0, 0, 0.2126, 0.7152, 0.0722, 0, 0, 0, 0, 0, 0.4, 0]),
+        child: Transform.scale(scale: 1.5, child: Image.asset(ruta)),
+      ),
     );
   }
 
@@ -104,7 +110,7 @@ class _DialogoCelebracionLogroState extends State<DialogoCelebracionLogro> {
     return Container(
       key: const ValueKey(2),
       decoration: BoxDecoration(shape: BoxShape.circle, boxShadow: [BoxShadow(color: widget.colorBrillo, blurRadius: 40, spreadRadius: 10)]),
-      child: Transform.scale(scale: 1.8, child: Image.asset(ruta)),
+      child: Transform.scale(scale: 1.8, child: Image.asset(ruta, semanticLabel: 'Gema ${widget.logro["dificultad"] ?? ""}')),
     );
   }
 }

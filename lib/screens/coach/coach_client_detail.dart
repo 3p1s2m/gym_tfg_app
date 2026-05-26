@@ -117,7 +117,9 @@ class _CoachClientDetailState extends State<CoachClientDetail> {
     showModalBottomSheet(
       context: context, backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => Padding(
+      builder: (context) => FocusTraversalGroup(
+        policy: ReadingOrderTraversalPolicy(),
+        child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -140,6 +142,7 @@ class _CoachClientDetailState extends State<CoachClientDetail> {
                 ),
               ))
           ],
+        ),
         ),
       ),
     );
@@ -234,6 +237,7 @@ class _CoachClientDetailState extends State<CoachClientDetail> {
                     subtitle: Text(esAsignada ? "Asignada por ti" : "Creada por el cliente", style: const TextStyle(color: Colors.grey, fontSize: 12)),
 
                     trailing: PopupMenuButton<String>(
+                      tooltip: 'Más opciones',
                       icon: const Icon(Icons.more_vert, color: Colors.grey),
                       color: Theme.of(context).colorScheme.surface,
                       onSelected: (value) {
@@ -276,14 +280,17 @@ class _CoachClientDetailState extends State<CoachClientDetail> {
             itemCount: _mensajesChat.length,
             itemBuilder: (context, index) {
               final msg = _mensajesChat[index];
-              return Align(
+              return Semantics(
+                label: '${msg["soyYo"] ? "Tú" : nombre}: ${msg["texto"]}',
+                child: Align(
                 alignment: msg["soyYo"] ? Alignment.centerRight : Alignment.centerLeft,
-                child: Container(
+                child: ExcludeSemantics(child: Container(
                   margin: const EdgeInsets.only(bottom: 15),
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   decoration: BoxDecoration(color: msg["soyYo"] ? Theme.of(context).primaryColor.withValues(alpha: 0.2) : Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(20), border: Border.all(color: msg["soyYo"] ? Theme.of(context).primaryColor.withValues(alpha: 0.5) : Colors.transparent)),
                   constraints: const BoxConstraints(maxWidth: 250),
                   child: Text(msg["texto"], style: const TextStyle(fontSize: 14)),
+                )),
                 ),
               );
             },
@@ -294,9 +301,9 @@ class _CoachClientDetailState extends State<CoachClientDetail> {
           decoration: BoxDecoration(color: Theme.of(context).appBarTheme.backgroundColor, border: const Border(top: BorderSide(color: Colors.white12))),
           child: Row(
             children: [
-              Expanded(child: TextField(controller: _chatController, decoration: InputDecoration(hintText: "Escribe a $nombre...", hintStyle: const TextStyle(color: Colors.grey), filled: true, fillColor: Theme.of(context).colorScheme.surface, contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none)))),
+              Expanded(child: TextField(controller: _chatController, decoration: InputDecoration(labelText: 'Escribe un mensaje', hintText: "Escribe a $nombre...", hintStyle: const TextStyle(color: Colors.grey), filled: true, fillColor: Theme.of(context).colorScheme.surface, contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none)))),
               const SizedBox(width: 10),
-              CircleAvatar(backgroundColor: Theme.of(context).primaryColor, child: IconButton(icon: const Icon(Icons.send, color: Colors.black), onPressed: _enviarMensaje))
+              CircleAvatar(backgroundColor: Theme.of(context).primaryColor, child: IconButton(tooltip: 'Enviar mensaje', icon: const Icon(Icons.send, color: Colors.black), onPressed: _enviarMensaje))
             ],
           ),
         )

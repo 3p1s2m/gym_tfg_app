@@ -121,7 +121,9 @@ class _CoachDashboardState extends State<CoachDashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Column(
+      body: FocusTraversalGroup(
+        policy: ReadingOrderTraversalPolicy(),
+        child: Column(
         children: [
           // BARRA DE BÚSQUEDA
           Padding(
@@ -129,6 +131,7 @@ class _CoachDashboardState extends State<CoachDashboard> {
             child: TextField(
               style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               decoration: InputDecoration(
+                labelText: 'Buscar atleta',
                 hintText: "Buscar atleta...",
                 hintStyle: const TextStyle(color: Colors.grey),
                 prefixIcon: Icon(Icons.search, color: Theme.of(context).primaryColor),
@@ -189,12 +192,22 @@ class _CoachDashboardState extends State<CoachDashboard> {
                         ),
                         Positioned(
                           bottom: 0, right: 0,
-                          child: Container(
-                            width: 14, height: 14,
-                            decoration: BoxDecoration(
-                                color: alDia ? Colors.greenAccent : Colors.redAccent,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Theme.of(context).colorScheme.surface, width: 2)
+                          child: Semantics(
+                            label: alDia ? 'Pago al día' : 'Pago pendiente',
+                            child: Container(
+                              width: 14, height: 14,
+                              decoration: BoxDecoration(
+                                  color: alDia ? Colors.greenAccent : Colors.redAccent,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Theme.of(context).colorScheme.surface, width: 2)
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  alDia ? Icons.check : Icons.warning,
+                                  size: 10,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                           ),
                         )
@@ -225,6 +238,7 @@ class _CoachDashboardState extends State<CoachDashboard> {
                 ),
           ),
         ],
+        ),
       ),
     );
   }

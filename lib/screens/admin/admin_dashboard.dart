@@ -61,11 +61,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   Text("Publicar Aviso Global", style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 20),
                   TextField(
-                    controller: txtCtrl, maxLines: 4, style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-                    decoration: InputDecoration(hintText: "¿Qué quieres comunicar al gimnasio?", filled: true, fillColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1), border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none)),
+                    autofocus: true, controller: txtCtrl, maxLines: 4, style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                    decoration: InputDecoration(labelText: "Aviso global", hintText: "¿Qué quieres comunicar al gimnasio?", filled: true, fillColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1), border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none)),
                   ),
                   const SizedBox(height: 15),
-                  InkWell(
+                  Semantics(
+                    label: 'Añadir imagen a la publicación',
+                    button: true,
+                    child: InkWell(
                       onTap: () async {
                         final picker = ImagePicker();
                         final XFile? foto = await picker.pickImage(source: ImageSource.gallery);
@@ -78,6 +81,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                             ? Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.add_photo_alternate, color: Theme.of(context).primaryColor), const SizedBox(width: 10), const Text("Añadir Foto (Opcional)", style: TextStyle(color: Colors.grey))])
                             : ClipRRect(borderRadius: BorderRadius.circular(15), child: Image.file(File(fotoSeleccionada!.path), fit: BoxFit.cover)),
                       )
+                    ),
                   ),
                   const SizedBox(height: 20),
                   SizedBox(
@@ -116,7 +120,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(title: const Text('PANEL ADMINISTRATIVO', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2.0)), backgroundColor: Theme.of(context).appBarTheme.backgroundColor, foregroundColor: Theme.of(context).appBarTheme.foregroundColor, centerTitle: true, elevation: 0),
-      body: _cargando
+      body: FocusTraversalGroup(
+        policy: ReadingOrderTraversalPolicy(),
+        child: _cargando
           ? Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor))
           : _stats == null
           ? const Center(child: Text("Error al cargar las estadísticas", style: TextStyle(color: Colors.redAccent)))
@@ -181,17 +187,18 @@ class _AdminDashboardState extends State<AdminDashboard> {
           ],
         ),
       ),
+      ),
     );
   }
 
   Widget _buildStatItem(String titulo, String valor, Color color) {
-    return Column(children: [Text(titulo, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 11)), const SizedBox(height: 5), Text(valor, style: TextStyle(color: color, fontSize: 16, fontWeight: FontWeight.bold))]);
+    return MergeSemantics(child: Column(children: [Text(titulo, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 11)), const SizedBox(height: 5), Text(valor, style: TextStyle(color: color, fontSize: 16, fontWeight: FontWeight.bold))]));
   }
 
   Widget _buildUserCard(String titulo, String cantidad, Color color) {
     return Container(
       padding: const EdgeInsets.all(15), decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(15), border: Border.all(color: color.withValues(alpha: 0.3), width: 2)),
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.people, size: 40, color: color.withValues(alpha: 0.7)), const SizedBox(height: 10), Text(titulo, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12)), const SizedBox(height: 5), Text(cantidad, style: TextStyle(color: color, fontSize: 24, fontWeight: FontWeight.bold))]),
+      child: MergeSemantics(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.people, size: 40, color: color.withValues(alpha: 0.7)), const SizedBox(height: 10), Text(titulo, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12)), const SizedBox(height: 5), Text(cantidad, style: TextStyle(color: color, fontSize: 24, fontWeight: FontWeight.bold))])),
     );
   }
 }

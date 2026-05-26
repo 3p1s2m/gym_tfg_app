@@ -163,15 +163,20 @@ class _NutricionScreenState extends State<NutricionScreen> {
             Text("Objetivo calórico"),
           ],
         ),
-        content: TextField(
-          controller: ctrl,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            hintText: "Ej: 2500",
-            suffixText: "kcal",
-            filled: true,
-            fillColor: Colors.grey[100],
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        content: FocusTraversalGroup(
+          policy: ReadingOrderTraversalPolicy(),
+          child: TextField(
+            autofocus: true,
+            controller: ctrl,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: "Calorías objetivo",
+              hintText: "Ej: 2500",
+              suffixText: "kcal",
+              filled: true,
+              fillColor: Theme.of(ctx).colorScheme.surfaceContainerHighest,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            ),
           ),
         ),
         actions: [
@@ -194,13 +199,14 @@ class _NutricionScreenState extends State<NutricionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: const Text("MI DIARIO NUTRICIONAL",
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: 1)),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
         elevation: 0,
         actions: [
           IconButton(
@@ -210,7 +216,9 @@ class _NutricionScreenState extends State<NutricionScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: FocusTraversalGroup(
+        policy: ReadingOrderTraversalPolicy(),
+        child: Column(
         children: [
           _buildSearchBox(),
           if (_cargandoBusqueda) const LinearProgressIndicator(color: Colors.deepPurple),
@@ -228,12 +236,12 @@ class _NutricionScreenState extends State<NutricionScreen> {
                 ],
                 _buildSectionHeader("ALIMENTOS DE HOY", Icons.restaurant_menu, Colors.orange),
                 if (_diarioHoy.isEmpty)
-                  const Center(
+                  Center(
                     child: Padding(
-                      padding: EdgeInsets.all(30),
+                      padding: const EdgeInsets.all(30),
                       child: Text("No hay registros.\nEscribe arriba para empezar.",
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey, fontSize: 15)),
+                          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 15)),
                     ),
                   )
                 else
@@ -242,26 +250,30 @@ class _NutricionScreenState extends State<NutricionScreen> {
             ),
           ),
         ],
+        ),
       ),
       bottomSheet: _buildResumenTotal(),
     );
   }
 
   Widget _buildSearchBox() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      color: Colors.white,
+      color: colorScheme.surface,
       child: TextField(
         controller: _controller,
         decoration: InputDecoration(
+          labelText: 'Describe tu comida o ingrediente',
           hintText: "Ej: Desayuno un café y 2 galletas",
           prefixIcon: const Icon(Icons.auto_awesome, color: Colors.deepPurple),
           suffixIcon: IconButton(
+            tooltip: 'Buscar con IA',
             icon: const Icon(Icons.send, color: Colors.deepPurple),
             onPressed: () => _ejecutarBusqueda(_controller.text),
           ),
           filled: true,
-          fillColor: Colors.grey[100],
+          fillColor: colorScheme.surfaceContainerHighest,
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
         ),
@@ -286,10 +298,10 @@ class _NutricionScreenState extends State<NutricionScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildCirculo("${_totalKcal.toStringAsFixed(0)}", "kcal", Colors.yellowAccent, 60),
-          _buildCirculo("${_totalProteinas.toStringAsFixed(0)}g", "Proteínas", Colors.greenAccent, 48),
-          _buildCirculo("${_totalCarbos.toStringAsFixed(0)}g", "Carbos", Colors.orangeAccent, 48),
-          _buildCirculo("${_totalGrasas.toStringAsFixed(0)}g", "Grasas", Colors.redAccent, 48),
+          Semantics(label: "${_totalKcal.toStringAsFixed(0)} kcal", child: _buildCirculo("${_totalKcal.toStringAsFixed(0)}", "kcal", Colors.yellowAccent, 60)),
+          Semantics(label: "${_totalProteinas.toStringAsFixed(0)}g Proteínas", child: _buildCirculo("${_totalProteinas.toStringAsFixed(0)}g", "Proteínas", Colors.greenAccent, 48)),
+          Semantics(label: "${_totalCarbos.toStringAsFixed(0)}g Carbos", child: _buildCirculo("${_totalCarbos.toStringAsFixed(0)}g", "Carbos", Colors.orangeAccent, 48)),
+          Semantics(label: "${_totalGrasas.toStringAsFixed(0)}g Grasas", child: _buildCirculo("${_totalGrasas.toStringAsFixed(0)}g", "Grasas", Colors.redAccent, 48)),
         ],
       ),
     );
@@ -322,11 +334,12 @@ class _NutricionScreenState extends State<NutricionScreen> {
     final color = progreso < 0.7 ? Colors.green : progreso < 0.9 ? Colors.orange : Colors.red;
     final restante = _objetivoCalorias - _totalKcal;
 
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8)],
       ),
@@ -336,19 +349,22 @@ class _NutricionScreenState extends State<NutricionScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("Objetivo diario", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              Text("Objetivo diario", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: colorScheme.onSurface)),
               Text("${_objetivoCalorias.toStringAsFixed(0)} kcal",
-                  style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  style: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12)),
             ],
           ),
           const SizedBox(height: 10),
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: LinearProgressIndicator(
-              value: progreso,
-              backgroundColor: Colors.grey[200],
-              color: color,
-              minHeight: 12,
+            child: Semantics(
+              label: '${(_totalKcal / _objetivoCalorias * 100).clamp(0, 100).toStringAsFixed(0)} por ciento del objetivo calórico diario',
+              child: LinearProgressIndicator(
+                value: progreso,
+                backgroundColor: colorScheme.surfaceContainerHighest,
+                color: color,
+                minHeight: 12,
+              ),
             ),
           ),
           const SizedBox(height: 8),
@@ -359,7 +375,7 @@ class _NutricionScreenState extends State<NutricionScreen> {
                   style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12)),
               Text(restante > 0 ? "Faltan ${restante.toStringAsFixed(0)} kcal" : "¡Objetivo superado!",
                   style: TextStyle(
-                      color: restante > 0 ? Colors.grey : Colors.red,
+                      color: restante > 0 ? colorScheme.onSurfaceVariant : Colors.red,
                       fontSize: 12)),
             ],
           ),
@@ -377,18 +393,21 @@ class _NutricionScreenState extends State<NutricionScreen> {
 
     final diasSemana = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
-    return Container(
+    final colorScheme = Theme.of(context).colorScheme;
+    return Semantics(
+      label: 'Gráfica de calorías de los últimos 7 días. ${_datosSemana.map((d) => "${['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'][(DateTime.tryParse(d[0].toString())?.weekday ?? 1) - 1]}: ${(d[1] ?? 0).toStringAsFixed(0)} kcal").join(', ')}',
+      child: ExcludeSemantics(child: Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("ÚLTIMOS 7 DÍAS", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 1)),
+          Text("ÚLTIMOS 7 DÍAS", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 1, color: colorScheme.onSurface)),
           const SizedBox(height: 16),
           SizedBox(
             height: 120,
@@ -407,7 +426,7 @@ class _NutricionScreenState extends State<NutricionScreen> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text("${kcal.toStringAsFixed(0)}",
-                        style: const TextStyle(fontSize: 8, color: Colors.grey)),
+                        style: TextStyle(fontSize: 8, color: colorScheme.onSurfaceVariant)),
                     const SizedBox(height: 4),
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 600),
@@ -429,7 +448,7 @@ class _NutricionScreenState extends State<NutricionScreen> {
                         style: TextStyle(
                             fontSize: 11,
                             fontWeight: esHoy ? FontWeight.bold : FontWeight.normal,
-                            color: esHoy ? Colors.deepPurple : Colors.grey)),
+                            color: esHoy ? Colors.deepPurple : colorScheme.onSurfaceVariant)),
                   ],
                 );
               }).toList(),
@@ -437,6 +456,7 @@ class _NutricionScreenState extends State<NutricionScreen> {
           ),
         ],
       ),
+    )),
     );
   }
 
@@ -456,9 +476,10 @@ class _NutricionScreenState extends State<NutricionScreen> {
   }
 
   Widget _buildAlimentoCardIA(Alimento item) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      color: const Color(0xFFEDE7F6),
+      color: colorScheme.secondaryContainer,
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: ListTile(
@@ -466,11 +487,12 @@ class _NutricionScreenState extends State<NutricionScreen> {
           backgroundColor: Colors.deepPurple[100],
           child: const Icon(Icons.auto_awesome, color: Colors.deepPurple, size: 18),
         ),
-        title: Text(item.nombre, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+        title: Text(item.nombre, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: colorScheme.onSecondaryContainer)),
         subtitle: Text(
             "${item.kcal} kcal  •  P: ${item.proteinas}g  •  C: ${item.carbohidratos}g  •  G: ${item.grasas}g",
-            style: const TextStyle(fontSize: 11, color: Colors.black54)),
+            style: TextStyle(fontSize: 11, color: colorScheme.onSecondaryContainer.withOpacity(0.7))),
         trailing: IconButton(
+          tooltip: 'Añadir al diario',
           icon: const Icon(Icons.add_circle, color: Colors.green, size: 32),
           onPressed: () => _guardarEnBaseDeDatos(item),
         ),
@@ -479,6 +501,7 @@ class _NutricionScreenState extends State<NutricionScreen> {
   }
 
   Widget _buildDiarioTile(dynamic comida) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       elevation: 1,
@@ -489,11 +512,12 @@ class _NutricionScreenState extends State<NutricionScreen> {
           child: const Icon(Icons.restaurant, color: Colors.deepOrange, size: 18),
         ),
         title: Text(comida['nombre'] ?? "Sin nombre",
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: colorScheme.onSurface)),
         subtitle: Text(
             "${comida['calorias']} kcal  •  P: ${comida['proteinas'] ?? 0}g  •  C: ${comida['carbohidratos'] ?? 0}g  •  G: ${comida['grasas'] ?? 0}g",
-            style: const TextStyle(fontSize: 11, color: Colors.black54)),
+            style: TextStyle(fontSize: 11, color: colorScheme.onSurface.withOpacity(0.54))),
         trailing: IconButton(
+          tooltip: 'Eliminar del diario',
           icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
           onPressed: () => _borrarComida(comida['idComida'] ?? comida['id']),
         ),
@@ -502,11 +526,12 @@ class _NutricionScreenState extends State<NutricionScreen> {
   }
 
   Widget _buildResumenTotal() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       height: 80,
       padding: const EdgeInsets.symmetric(horizontal: 25),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         boxShadow: [BoxShadow(
             color: Colors.black.withOpacity(0.08),
             blurRadius: 10, offset: const Offset(0, -2))],
@@ -514,7 +539,7 @@ class _NutricionScreenState extends State<NutricionScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text("TOTAL HOY:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          Text("TOTAL HOY:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: colorScheme.onSurface)),
           Text("${_totalKcal.toStringAsFixed(0)} kcal",
               style: const TextStyle(fontSize: 26, color: Colors.deepPurple, fontWeight: FontWeight.bold)),
         ],

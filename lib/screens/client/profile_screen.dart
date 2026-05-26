@@ -244,12 +244,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             return AlertDialog(
               backgroundColor: Theme.of(context).colorScheme.surface,
               title: const Text("Ficha Física", style: TextStyle(fontWeight: FontWeight.bold)),
-              content: SingleChildScrollView(
+              content: FocusTraversalGroup(
+                policy: ReadingOrderTraversalPolicy(),
+                child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextField(controller: nombreCtrl, decoration: const InputDecoration(labelText: "Alias / Nombre", labelStyle: TextStyle(color: Colors.grey), enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white38)))),
+                    TextField(autofocus: true, controller: nombreCtrl, decoration: const InputDecoration(labelText: "Alias / Nombre", labelStyle: TextStyle(color: Colors.grey), enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white38)))),
                     const SizedBox(height: 15),
                     Row(
                       children: [
@@ -331,6 +333,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ),
+              ),
               actions: [
                 TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar", style: TextStyle(color: Colors.grey))),
                 ElevatedButton(
@@ -408,7 +411,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         elevation: 0,
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
+      body: FocusTraversalGroup(
+        policy: ReadingOrderTraversalPolicy(),
+        child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
@@ -417,18 +422,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Stack(
                 alignment: Alignment.bottomRight,
                 children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundColor: Theme.of(context).colorScheme.surface,
-                    backgroundImage: _fotoLocal != null ? FileImage(_fotoLocal!) : null,
-                    child: _fotoLocal == null ? Icon(Icons.person, size: 50, color: Theme.of(context).primaryColor) : null,
+                  Semantics(
+                    label: 'Foto de perfil',
+                    image: true,
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                      backgroundImage: _fotoLocal != null ? FileImage(_fotoLocal!) : null,
+                      child: _fotoLocal == null ? Icon(Icons.person, size: 50, color: Theme.of(context).primaryColor, semanticLabel: 'Sin foto de perfil') : null,
+                    ),
                   ),
-                  GestureDetector(
-                    onTap: _mostrarOpcionesDeFoto,
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor, shape: BoxShape.circle),
-                      child: CircleAvatar(radius: 14, backgroundColor: Theme.of(context).primaryColor, child: const Icon(Icons.camera_alt, size: 16, color: Colors.black)),
+                  Semantics(
+                    label: 'Cambiar foto de perfil',
+                    button: true,
+                    child: GestureDetector(
+                      onTap: _mostrarOpcionesDeFoto,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor, shape: BoxShape.circle),
+                        child: CircleAvatar(radius: 14, backgroundColor: Theme.of(context).primaryColor, child: const Icon(Icons.camera_alt, size: 16, color: Colors.black)),
+                      ),
                     ),
                   )
                 ],
@@ -480,7 +493,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ListTile(
                     leading: Icon(Icons.color_lens_outlined, color: Theme.of(context).primaryColor),
                     title: const Text("Color Global de la App"),
-                    trailing: CircleAvatar(backgroundColor: Theme.of(context).primaryColor, radius: 10),
+                    trailing: Semantics(
+                      label: 'Color del tema seleccionado',
+                      child: CircleAvatar(backgroundColor: Theme.of(context).primaryColor, radius: 10),
+                    ),
                     onTap: _abrirSelectorColor,
                   ),
                   const Divider(color: Colors.grey, height: 1, indent: 50, endIndent: 20,),
@@ -489,20 +505,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ValueListenableBuilder<bool>(
                       valueListenable: appModoOscuro,
                       builder: (context, isDark, child) {
-                        return ListTile(
-                          leading: Icon(isDark ? Icons.dark_mode : Icons.light_mode, color: Theme.of(context).primaryColor),
-                          title: const Text("Modo Oscuro"),
-                          trailing: Switch(
-                            value: isDark,
-                            activeColor: Theme.of(context).primaryColor,
-                            onChanged: (val) async {
-                              final prefs = await SharedPreferences.getInstance();
-                              await prefs.setBool('modo_oscuro', val);
-                              appModoOscuro.value = val;
-                            },
+                        return MergeSemantics(
+                          child: ListTile(
+                            leading: Icon(isDark ? Icons.dark_mode : Icons.light_mode, color: Theme.of(context).primaryColor),
+                            title: const Text("Modo Oscuro"),
+                            trailing: Switch(
+                              value: isDark,
+                              activeColor: Theme.of(context).primaryColor,
+                              onChanged: (val) async {
+                                final prefs = await SharedPreferences.getInstance();
+                                await prefs.setBool('modo_oscuro', val);
+                                appModoOscuro.value = val;
+                              },
+                            ),
                           ),
                         );
                       }
+                  ),
+                  const Divider(color: Colors.grey, height: 1, indent: 50, endIndent: 20),
+                  ValueListenableBuilder<double>(
+                    valueListenable: appTamanoFuente,
+                    builder: (context, escala, child) {
+                      const pasos = [0.85, 1.0, 1.2, 1.4];
+                      const etiquetas = ['Pequeño', 'Normal', 'Grande', 'Muy grande'];
+                      int idx = pasos.indexWhere((p) => (p - escala).abs() < 0.01);
+                      if (idx == -1) idx = 1;
+                      Future<void> cambiar(int i) async {
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setDouble('tamano_fuente', pasos[i]);
+                        appTamanoFuente.value = pasos[i];
+                      }
+                      return ListTile(
+                        leading: Icon(Icons.text_fields, color: Theme.of(context).primaryColor),
+                        title: const Text("Tamaño de Letra"),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              tooltip: 'Reducir tamaño de texto',
+                              icon: const Icon(Icons.remove_circle_outline),
+                              color: idx > 0 ? Theme.of(context).primaryColor : Colors.grey,
+                              onPressed: idx > 0 ? () => cambiar(idx - 1) : null,
+                            ),
+                            Text(etiquetas[idx], style: const TextStyle(fontWeight: FontWeight.bold)),
+                            IconButton(
+                              tooltip: 'Aumentar tamaño de texto',
+                              icon: const Icon(Icons.add_circle_outline),
+                              color: idx < pasos.length - 1 ? Theme.of(context).primaryColor : Colors.grey,
+                              onPressed: idx < pasos.length - 1 ? () => cambiar(idx + 1) : null,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -518,27 +573,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
               decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(15)),
               child: Column(
                 children: [
-                  ListTile(
-                    leading: const Icon(Icons.shield_outlined),
-                    title: const Text("Ocultar en el Ranking"),
-                    trailing: Switch(
-                      value: _datosUsuario!["ocultoEnRanking"] == true,
-                      activeColor: Theme.of(context).primaryColor,
-                      onChanged: (val) {
-                        _actualizarPerfilEnBaseDeDatos({"ocultoEnRanking": val});
-                      },
+                  MergeSemantics(
+                    child: ListTile(
+                      leading: const Icon(Icons.shield_outlined),
+                      title: const Text("Ocultar en el Ranking"),
+                      trailing: Switch(
+                        value: _datosUsuario!["ocultoEnRanking"] == true,
+                        activeColor: Theme.of(context).primaryColor,
+                        onChanged: (val) {
+                          _actualizarPerfilEnBaseDeDatos({"ocultoEnRanking": val});
+                        },
+                      ),
                     ),
                   ),
                   const Divider(color: Colors.grey, height: 1, indent: 50, endIndent: 20,),
-                  ListTile(
-                    leading: const Icon(Icons.notifications_active_outlined),
-                    title: const Text("Notificaciones Push"),
-                    trailing: Switch(
-                        value: _datosUsuario!["notificacionesPush"] == true,
-                        activeColor: Theme.of(context).primaryColor,
-                        onChanged: (val) {
-                          _actualizarPerfilEnBaseDeDatos({"notificacionesPush": val});
-                        }
+                  MergeSemantics(
+                    child: ListTile(
+                      leading: const Icon(Icons.notifications_active_outlined),
+                      title: const Text("Notificaciones Push"),
+                      trailing: Switch(
+                          value: _datosUsuario!["notificacionesPush"] == true,
+                          activeColor: Theme.of(context).primaryColor,
+                          onChanged: (val) {
+                            _actualizarPerfilEnBaseDeDatos({"notificacionesPush": val});
+                          }
+                      ),
                     ),
                   ),
                 ],
@@ -574,6 +633,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 40),
           ],
         ),
+      ),
       ),
     );
   }

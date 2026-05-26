@@ -54,11 +54,14 @@ class _CircularTimerWidgetState extends State<CircularTimerWidget> {
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1C1C1E),
         title: const Text("Tiempo de Descanso", style: TextStyle(color: Colors.white, fontSize: 16)),
-        content: Row(
+        content: FocusTraversalGroup(
+          policy: ReadingOrderTraversalPolicy(),
+          child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Expanded(
               child: TextField(
+                autofocus: true,
                 controller: minController,
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
@@ -77,6 +80,7 @@ class _CircularTimerWidgetState extends State<CircularTimerWidget> {
               ),
             ),
           ],
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar", style: TextStyle(color: Colors.grey))),
@@ -111,7 +115,10 @@ class _CircularTimerWidgetState extends State<CircularTimerWidget> {
     double progreso = _maxSegundos > 0 ? _segundosRestantes / _maxSegundos : 0;
     String tiempoStr = "${(_segundosRestantes ~/ 60)}:${(_segundosRestantes % 60).toString().padLeft(2, '0')}";
 
-    return GestureDetector(
+    return Semantics(
+      label: 'Temporizador de descanso: $tiempoStr. ${_estaCorriendo ? "En marcha, toca para pausar" : "Pausado, toca para iniciar"}. Mantén pulsado para editar el tiempo.',
+      button: true,
+      child: GestureDetector(
       onTap: _iniciarPausar,
       onLongPress: _editarTiempo,
       child: Center(
@@ -129,6 +136,7 @@ class _CircularTimerWidgetState extends State<CircularTimerWidget> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

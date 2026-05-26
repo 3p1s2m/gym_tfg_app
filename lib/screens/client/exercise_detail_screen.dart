@@ -140,9 +140,13 @@ class _EjercicioDetalleScreenState extends State<EjercicioDetalleScreen> {
                   ? CachedNetworkImage(
                       imageUrl: imagenUrl,
                       fit: BoxFit.cover,
-                      errorWidget: (context, url, error) => Icon(Icons.fitness_center, size: 80, color: colorTexto.withValues(alpha: 0.2)),
+                      imageBuilder: (context, imageProvider) => Semantics(
+                        label: nombre,
+                        child: Image(image: imageProvider, fit: BoxFit.cover),
+                      ),
+                      errorWidget: (context, url, error) => ExcludeSemantics(child: Icon(Icons.fitness_center, size: 80, color: colorTexto.withValues(alpha: 0.2))),
                     )
-                  : Icon(Icons.image_not_supported, size: 80, color: colorTexto.withValues(alpha: 0.2)),
+                  : Semantics(label: 'Imagen no disponible', child: Icon(Icons.image_not_supported, size: 80, color: colorTexto.withValues(alpha: 0.2))),
             ),
             
             Container(
@@ -227,21 +231,21 @@ class _EjercicioDetalleScreenState extends State<EjercicioDetalleScreen> {
 
                                             return Padding(
                                               padding: const EdgeInsets.only(bottom: 8.0),
-                                              child: Row(
+                                              child: MergeSemantics(child: Row(
                                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                 children: [
                                                   Text("Serie $numeroSerie", style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
                                                   Row(
                                                     children: [
                                                       Text("$peso kg", style: TextStyle(color: colorTexto, fontSize: 16, fontWeight: FontWeight.bold)),
-                                                      const Text("  x  ", style: TextStyle(color: Colors.grey)),
+                                                      const ExcludeSemantics(child: Text("  x  ", style: TextStyle(color: Colors.grey))),
                                                       Text("$reps reps", style: TextStyle(color: colorTexto, fontSize: 16, fontWeight: FontWeight.bold)),
                                                       const SizedBox(width: 10),
-                                                      const Icon(Icons.check_circle, color: Colors.green, size: 18),
+                                                      const ExcludeSemantics(child: Icon(Icons.check_circle, color: Colors.green, size: 18)),
                                                     ],
                                                   )
                                                 ],
-                                              ),
+                                              )),
                                             );
                                           }).toList(),
                                         ),

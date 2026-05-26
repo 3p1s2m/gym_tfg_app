@@ -11,6 +11,7 @@ import 'screens/admin/admin_navigation.dart';
 final ValueNotifier<Color> appColorTema = ValueNotifier<Color>(Colors.cyanAccent);
 final ValueNotifier<bool> appModoOscuro = ValueNotifier<bool>(true);
 final ValueNotifier<String> appGenero = ValueNotifier<String>("hombre");
+final ValueNotifier<double> appTamanoFuente = ValueNotifier<double>(1.0);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,10 +20,12 @@ void main() async {
   int colorValue = prefs.getInt('tema_color') ?? Colors.cyanAccent.value;
   bool isDark = prefs.getBool('modo_oscuro') ?? true;
   String generoGuardado = prefs.getString('genero') ?? "hombre";
+  double tamanoFuente = prefs.getDouble('tamano_fuente') ?? 1.0;
 
   appColorTema.value = Color(colorValue);
   appModoOscuro.value = isDark;
   appGenero.value = generoGuardado;
+  appTamanoFuente.value = tamanoFuente;
 
   runApp(const MyApp());
 }
@@ -79,6 +82,17 @@ class MyApp extends StatelessWidget {
               ),
 
               home: const SplashScreen(),
+              builder: (context, child) {
+                return ValueListenableBuilder<double>(
+                  valueListenable: appTamanoFuente,
+                  builder: (context, escala, _) {
+                    return MediaQuery(
+                      data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(escala)),
+                      child: child!,
+                    );
+                  },
+                );
+              },
             );
           },
         );

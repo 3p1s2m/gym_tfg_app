@@ -41,6 +41,8 @@ class _TabFrecuenciaState extends State<TabFrecuencia> {
 
       final response = await http.get(Uri.parse(urlBase), headers: {'Authorization': 'Bearer $token'});
 
+      debugPrint("🗺️ MAPA CALOR status: ${response.statusCode}");
+      debugPrint("🗺️ MAPA CALOR body: ${response.body}");
       if (response.statusCode == 200) {
         if (mounted) {
           setState(() {
@@ -48,6 +50,8 @@ class _TabFrecuenciaState extends State<TabFrecuencia> {
                 .map((key, value) => MapEntry(key, Map<String, dynamic>.from(value)));
             _cargando = false;
           });
+          debugPrint("🗺️ MAPA CALOR keys: ${_datosVolumen.keys.toList()}");
+          debugPrint("🗺️ chest hechas: ${_datosVolumen['chest']?['hechas']}");
         }
       } else {
         if (mounted) setState(() => _cargando = false);
@@ -101,24 +105,37 @@ class _TabFrecuenciaState extends State<TabFrecuencia> {
     if (activos == 0) return const SizedBox.shrink();
     bool semanaPerfecta = (activos == cumplidos);
 
-    return Container(
-      width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 8),
-      color: semanaPerfecta ? Colors.orange.shade900 : Colors.black26,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(semanaPerfecta ? Icons.local_fire_department : Icons.tablet_outlined, color: semanaPerfecta ? Colors.yellow : Colors.grey, size: 20),
-          const SizedBox(width: 8),
-          Text(semanaPerfecta ? "¡SEMANA PERFECTA! 🔥" : "Objetivos cumplidos: $cumplidos / $activos", style: TextStyle(color: semanaPerfecta ? Colors.white : Colors.grey, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
-        ],
+    final labelRacha = semanaPerfecta ? "Semana perfecta, todos los objetivos cumplidos" : "Objetivos de volumen cumplidos: $cumplidos de $activos esta semana";
+    return Semantics(
+      label: labelRacha,
+      container: true,
+      child: ExcludeSemantics(
+        child: Container(
+          width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 8),
+          color: semanaPerfecta ? Colors.orange.shade900 : Colors.black26,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(semanaPerfecta ? Icons.local_fire_department : Icons.tablet_outlined, color: semanaPerfecta ? Colors.yellow : Colors.grey, size: 20),
+              const SizedBox(width: 8),
+              Text(semanaPerfecta ? "¡SEMANA PERFECTA! 🔥" : "Objetivos cumplidos: $cumplidos / $activos", style: TextStyle(color: semanaPerfecta ? Colors.white : Colors.grey, fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+            ],
+          ),
+        ),
       ),
     );
   }
 
   Color _getColorDinamico(double hechas, int objetivo, Color colorTema) {
-    if (objetivo == 0 || hechas <= 0) return Colors.transparent;
-    double porcentaje = (hechas / objetivo) * 100;
+    if (hechas <= 0) return Colors.transparent;
 
+    if (objetivo == 0) {
+      // Sin objetivo: escala absoluta (0–20 series/semana)
+      double alpha = (hechas / 20.0).clamp(0.2, 1.0);
+      return colorTema.withValues(alpha: alpha);
+    }
+
+    double porcentaje = (hechas / objetivo) * 100;
     if (porcentaje < 50) return colorTema.withValues(alpha: 0.35);
     else if (porcentaje < 100) return colorTema.withValues(alpha: 0.7);
     else if (porcentaje <= 120) return colorTema;
@@ -136,9 +153,11 @@ class _TabFrecuenciaState extends State<TabFrecuencia> {
         capas.add(
           Positioned.fill(
             child: IgnorePointer(
-              child: ColorFiltered(
-                colorFilter: ColorFilter.mode(colorPintar, BlendMode.srcIn),
-                child: Image.asset('assets/images/partes/mask_${generoVisualActual}_${_esFrente ? "frente" : "espalda"}_$musculo.png', fit: BoxFit.contain, errorBuilder: (c, e, s) => const SizedBox.shrink()),
+              child: ExcludeSemantics(
+                child: ColorFiltered(
+                  colorFilter: ColorFilter.mode(colorPintar, BlendMode.srcIn),
+                  child: Image.asset('assets/images/partes/mask_${generoVisualActual}_${_esFrente ? "frente" : "espalda"}_$musculo.png', fit: BoxFit.contain, errorBuilder: (c, e, s) => const SizedBox.shrink()),
+                ),
               ),
             ),
           ),
@@ -171,7 +190,7 @@ class _TabFrecuenciaState extends State<TabFrecuencia> {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        Positioned.fill(child: GestureDetector(onTap: () => setState(() => _esFrente = !_esFrente), child: Image.asset('assets/images/body_${genero}_${_esFrente ? "frente" : "espalda"}.png', fit: BoxFit.contain))),
+                        Positioned.fill(child: Semantics(label: _esFrente ? "Vista frontal del cuerpo, toca para ver espalda" : "Vista trasera del cuerpo, toca para ver frente", button: true, child: GestureDetector(onTap: () => setState(() => _esFrente = !_esFrente), child: Image.asset('assets/images/body_${genero}_${_esFrente ? "frente" : "espalda"}.png', fit: BoxFit.contain)))),
                         if (_esFrente) ...[
                           ..._buildCapasAgrupadas('chest', ['chest'], genero, temaApp),
                           ..._buildCapasAgrupadas('abs_core', ['abdominals'], genero, temaApp),
@@ -185,8 +204,8 @@ class _TabFrecuenciaState extends State<TabFrecuencia> {
                           ..._buildCapasAgrupadas('calves', ['calves'], genero, temaApp),
                           ..._buildCapasAgrupadas('triceps', ['triceps'], genero, temaApp),
                         ] else ...[
-                          ..._buildCapasAgrupadas('back_high', ['middle_back', 'traps'], genero, temaApp),
-                          ..._buildCapasAgrupadas('back_low', ['lower_back', 'obliques'], genero, temaApp),
+                          ..._buildCapasAgrupadas('back_high', ['traps'], genero, temaApp),
+                          ..._buildCapasAgrupadas('back_low', ['lumbar', 'obliques'], genero, temaApp),
                           ..._buildCapasAgrupadas('lats', ['lats'], genero, temaApp),
                           ..._buildCapasAgrupadas('triceps', ['triceps'], genero, temaApp),
                           ..._buildCapasAgrupadas('glutes', ['glutes'], genero, temaApp),
@@ -220,7 +239,7 @@ class _TabFrecuenciaState extends State<TabFrecuencia> {
                   double progreso = objetivo > 0 ? (hechas / objetivo) : 0.0;
                   bool fatigado = progreso > 1.2; // IDEA 3: Detección de fatiga
 
-                  return InkWell(
+                  Widget inkWellRow = InkWell(
                     // IDEA 3: Alerta de fatiga al tocar el panel del músculo
                     onTap: fatigado ? () {
                       showDialog(context: context, builder: (_) => AlertDialog(
@@ -252,9 +271,9 @@ class _TabFrecuenciaState extends State<TabFrecuencia> {
                                     const SizedBox(width: 5),
                                     Text("$objetivo sets", style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold, fontSize: 16)),
                                   ] else ...[
-                                    IconButton(icon: const Icon(Icons.remove_circle_outline, color: Colors.grey), onPressed: () => _actualizarObjetivo(keyInterna, objetivo - 1)),
+                                    IconButton(tooltip: 'Reducir objetivo de series', icon: const Icon(Icons.remove_circle_outline, color: Colors.grey), onPressed: () => _actualizarObjetivo(keyInterna, objetivo - 1)),
                                     Text("$objetivo sets", style: TextStyle(color: temaApp, fontWeight: FontWeight.bold, fontSize: 16)),
-                                    IconButton(icon: const Icon(Icons.add_circle_outline, color: Colors.grey), onPressed: () => _actualizarObjetivo(keyInterna, objetivo + 1)),
+                                    IconButton(tooltip: 'Aumentar objetivo de series', icon: const Icon(Icons.add_circle_outline, color: Colors.grey), onPressed: () => _actualizarObjetivo(keyInterna, objetivo + 1)),
                                   ]
                                 ],
                               )
@@ -266,12 +285,15 @@ class _TabFrecuenciaState extends State<TabFrecuencia> {
                               Text("${hechas.toStringAsFixed(1)} hechas", style: const TextStyle(color: Colors.grey, fontSize: 12)),
                               const SizedBox(width: 10),
                               Expanded(
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: LinearProgressIndicator(
-                                    value: progreso > 1.0 ? 1.0 : progreso,
-                                    minHeight: 8, backgroundColor: Colors.white10,
-                                    valueColor: AlwaysStoppedAnimation<Color>(fatigado ? Colors.orange : temaApp),
+                                child: Semantics(
+                                  label: '$nombreBonito: ${hechas.toStringAsFixed(1)} series realizadas${objetivo > 0 ? " de $objetivo objetivo, ${(progreso * 100).clamp(0, 100).toStringAsFixed(0)} por ciento" : ""}',
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: LinearProgressIndicator(
+                                      value: progreso > 1.0 ? 1.0 : progreso,
+                                      minHeight: 8, backgroundColor: Colors.white10,
+                                      valueColor: AlwaysStoppedAnimation<Color>(fatigado ? Colors.orange : temaApp),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -281,6 +303,9 @@ class _TabFrecuenciaState extends State<TabFrecuencia> {
                       ),
                     ),
                   );
+                  return fatigado
+                      ? Semantics(hint: 'Toca para ver advertencia de fatiga', child: inkWellRow)
+                      : inkWellRow;
                 },
               ),
             )

@@ -26,10 +26,12 @@ class _StaffScannerScreenState extends State<StaffScannerScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
+            ExcludeSemantics(
+              child: Icon(
                 Icons.qr_code_scanner,
                 size: 80,
                 color: Theme.of(context).primaryColor.withValues(alpha: 0.3)
+              ),
             ),
             const SizedBox(height: 20),
             const Text(

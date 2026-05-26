@@ -44,9 +44,9 @@ class _AdminAchievementsManagerState extends State<AdminAchievementsManager> {
                 children: [
                   Text('Crear Nuevo Logro', style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 20),
-                  TextField(controller: nombreCtrl, decoration: InputDecoration(hintText: 'Nombre del logro', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none))),
+                  TextField(controller: nombreCtrl, decoration: InputDecoration(labelText: 'Nombre del logro', hintText: 'Nombre del logro', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none))),
                   const SizedBox(height: 15),
-                  TextField(controller: descCtrl, maxLines: 3, decoration: InputDecoration(hintText: 'Descripción', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none))),
+                  TextField(controller: descCtrl, maxLines: 3, decoration: InputDecoration(labelText: 'Descripción', hintText: 'Descripción', filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none))),
                   const SizedBox(height: 15),
                   DropdownButtonFormField<String>(
                     value: difSeleccionada, dropdownColor: Theme.of(context).colorScheme.surface, decoration: InputDecoration(filled: true, fillColor: Colors.white10, border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none)),
@@ -89,22 +89,24 @@ class _AdminAchievementsManagerState extends State<AdminAchievementsManager> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(title: const Text('CATÁLOGO DE LOGROS', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2.0)), backgroundColor: Theme.of(context).appBarTheme.backgroundColor, foregroundColor: Theme.of(context).appBarTheme.foregroundColor, centerTitle: true, elevation: 0),
-      floatingActionButton: FloatingActionButton(backgroundColor: Theme.of(context).primaryColor, onPressed: _abrirCrearLogro, child: const Icon(Icons.add, color: Colors.black)),
+      floatingActionButton: FloatingActionButton(tooltip: 'Crear nuevo logro', backgroundColor: Theme.of(context).primaryColor, onPressed: _abrirCrearLogro, child: const Icon(Icons.add, color: Colors.black)),
       body: _cargando ? Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor)) : ListView.builder(
         padding: const EdgeInsets.all(15), itemCount: _logros.length,
         itemBuilder: (context, index) {
           final logro = _logros[index];
           final color = _getColorDificultad(logro['dificultad']);
-          return Card(
-            color: Theme.of(context).colorScheme.surface, margin: const EdgeInsets.only(bottom: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: const BorderSide(color: Colors.white12)),
-            child: Padding(
-              padding: const EdgeInsets.all(15),
-              child: Row(
-                children: [
-                  Container(width: 50, height: 50, decoration: BoxDecoration(shape: BoxShape.circle, color: color.withValues(alpha: 0.2)), child: Icon(Icons.emoji_events, size: 30, color: color)),
-                  const SizedBox(width: 15),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(logro['nombre'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), const SizedBox(height: 4), Text(logro['descripcion'], style: const TextStyle(color: Colors.grey, fontSize: 12))])),
-                ],
+          return MergeSemantics(
+            child: Card(
+              color: Theme.of(context).colorScheme.surface, margin: const EdgeInsets.only(bottom: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: const BorderSide(color: Colors.white12)),
+              child: Padding(
+                padding: const EdgeInsets.all(15),
+                child: Row(
+                  children: [
+                    Container(width: 50, height: 50, decoration: BoxDecoration(shape: BoxShape.circle, color: color.withValues(alpha: 0.2)), child: Icon(Icons.emoji_events, size: 30, color: color)),
+                    const SizedBox(width: 15),
+                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(logro['nombre'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)), const SizedBox(height: 4), Text(logro['descripcion'], style: const TextStyle(color: Colors.grey, fontSize: 12))])),
+                  ],
+                ),
               ),
             ),
           );

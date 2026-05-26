@@ -124,7 +124,10 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
                 const SizedBox(height: 20),
                 Wrap(
                   spacing: 15, runSpacing: 15,
-                  children: _opcionesIconos.map((icono) => GestureDetector(
+                  children: _opcionesIconos.map((icono) => Semantics(
+                    label: 'Seleccionar icono $icono',
+                    button: true,
+                    child: GestureDetector(
                     onTap: () {
                       setState(() => _iconoSeleccionado = icono);
                       Navigator.pop(context);
@@ -137,7 +140,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
                         child: Text(icono, style: const TextStyle(fontSize: 32)),
                       ),
                     ),
-                  )).toList(),
+                  ))).toList(),
                 ),
                 const SizedBox(height: 30),
               ],
@@ -171,14 +174,18 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
           children: [
             Row(
               children: [
-                GestureDetector(
-                  onTap: _mostrarSelectorIconos,
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface.withOpacity(0.8), borderRadius: BorderRadius.circular(15), border: Border.all(color: Theme.of(context).primaryColor, width: 2)),
-                    child: ColorFiltered(
-                      colorFilter: ColorFilter.mode(Theme.of(context).primaryColor, BlendMode.srcIn),
-                      child: Text(_iconoSeleccionado, style: const TextStyle(fontSize: 35)),
+                Semantics(
+                  label: 'Selector de icono de rutina, toca para cambiar',
+                  button: true,
+                  child: GestureDetector(
+                    onTap: _mostrarSelectorIconos,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface.withOpacity(0.8), borderRadius: BorderRadius.circular(15), border: Border.all(color: Theme.of(context).primaryColor, width: 2)),
+                      child: ColorFiltered(
+                        colorFilter: ColorFilter.mode(Theme.of(context).primaryColor, BlendMode.srcIn),
+                        child: Text(_iconoSeleccionado, style: const TextStyle(fontSize: 35)),
+                      ),
                     ),
                   ),
                 ),
@@ -188,7 +195,8 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
                     controller: _nombreController,
                     style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 24, fontWeight: FontWeight.bold),
                     decoration: InputDecoration(
-                      hintText: "Nombre (ej. Empuje)", 
+                      labelText: 'Nombre de la rutina',
+                      hintText: "Nombre (ej. Empuje)",
                       hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
                       filled: true,
                       fillColor: Theme.of(context).colorScheme.surface.withOpacity(0.5),
@@ -227,7 +235,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
                       leading: ReorderableDragStartListener(index: index, child: const Icon(Icons.drag_handle, color: Colors.grey)),
                       title: Text(ej["nombre"]),
                       subtitle: Text(ej["grupoMuscular"] ?? "General", style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 12)),
-                      trailing: IconButton(icon: const Icon(Icons.delete, color: Colors.redAccent), onPressed: () => setState(() => _ejerciciosSeleccionados.removeAt(index))),
+                      trailing: IconButton(tooltip: 'Eliminar ejercicio de la rutina', icon: const Icon(Icons.delete, color: Colors.redAccent), onPressed: () => setState(() => _ejerciciosSeleccionados.removeAt(index))),
                     ),
                   );
                 },

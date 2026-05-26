@@ -235,6 +235,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
               centerTitle: true,
               actions: [
                 IconButton(
+                    tooltip: 'Archivar rutina',
                     icon: Icon(Icons.archive_outlined, color: Theme.of(context).primaryColor),
                     onPressed: () => setState(() => _viendoArchivadas = true)),
                 const SizedBox(width: 10),
@@ -337,11 +338,15 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
             leading: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                ReorderableDragStartListener(
+                Semantics(
+                  label: 'Arrastrar para reordenar',
+                  button: true,
+                  child: ReorderableDragStartListener(
                   index: index,
                   child: const Padding(
                       padding: EdgeInsets.only(right: 10.0),
                       child: Icon(Icons.drag_handle, color: Colors.grey)),
+                  ),
                 ),
                 Container(
                   padding: const EdgeInsets.all(10),
@@ -361,6 +366,7 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
               children: [
                 if (!esEntrenadorView) ...[
                   IconButton(
+                    tooltip: 'Editar rutina',
                     icon: const Icon(Icons.edit_outlined, color: Colors.grey),
                     onPressed: () async {
                       final recargar = await Navigator.push(context,
@@ -373,19 +379,24 @@ class _RoutinesScreenState extends State<RoutinesScreen> {
                     },
                   ),
                   IconButton(
+                    tooltip: 'Eliminar rutina',
                     icon: Icon(Icons.delete_outline,
                         color: Colors.grey.withValues(alpha: 0.5)),
                     onPressed: () => _confirmarBorrado(rutina),
                   ),
                 ],
                 const SizedBox(width: 5),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
-                      shape: BoxShape.circle),
-                  child: Icon(Icons.play_arrow,
-                      color: Theme.of(context).primaryColor, size: 24),
+                Semantics(
+                  label: 'Iniciar entrenamiento de ${rutina["nombre"] ?? "rutina"}',
+                  button: true,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                        shape: BoxShape.circle),
+                    child: Icon(Icons.play_arrow,
+                        color: Theme.of(context).primaryColor, size: 24),
+                  ),
                 ),
               ],
             ),

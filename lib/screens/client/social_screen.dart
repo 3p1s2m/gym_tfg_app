@@ -133,12 +133,15 @@ class _SocialScreenState extends State<SocialScreen> {
                   Text("Crear Anuncio", style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 20),
                   TextField(
-                    controller: txtCtrl, maxLines: 4,
+                    controller: txtCtrl, maxLines: 4, autofocus: true,
                     style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-                    decoration: InputDecoration(hintText: "¿Qué quieres comunicar al gimnasio?", filled: true, fillColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1), border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none)),
+                    decoration: InputDecoration(labelText: "Anuncio", hintText: "¿Qué quieres comunicar al gimnasio?", filled: true, fillColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1), border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none)),
                   ),
                   const SizedBox(height: 15),
-                  InkWell(
+                  Semantics(
+                    label: fotoSeleccionada == null ? "Añadir foto a la publicación" : "Foto seleccionada, toca para cambiar",
+                    button: true,
+                    child: InkWell(
                       onTap: () async {
                         final picker = ImagePicker();
                         final XFile? foto = await picker.pickImage(source: ImageSource.gallery);
@@ -152,6 +155,7 @@ class _SocialScreenState extends State<SocialScreen> {
                             ? Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.add_photo_alternate, color: Theme.of(context).primaryColor), const SizedBox(width: 10), const Text("Añadir Foto de Galería", style: TextStyle(color: Colors.grey))])
                             : ClipRRect(borderRadius: BorderRadius.circular(15), child: Image.file(File(fotoSeleccionada!.path), fit: BoxFit.cover)),
                       )
+                  ),
                   ),
                   const SizedBox(height: 20),
                   SizedBox(
@@ -271,13 +275,16 @@ class _SocialScreenState extends State<SocialScreen> {
             ],
           ),
         ),
-        body: TabBarView(
-          children: [
-            _buildMuroNoticias(),
-            _buildListaClases(),
-            _buildRanking(),
-            if (!_esEntrenador && !_esStaffOAdmin) _tieneEntrenador ? _buildChatEntrenador() : _buildMuroDePagoChat(),
-          ],
+        body: FocusTraversalGroup(
+          policy: ReadingOrderTraversalPolicy(),
+          child: TabBarView(
+            children: [
+              _buildMuroNoticias(),
+              _buildListaClases(),
+              _buildRanking(),
+              if (!_esEntrenador && !_esStaffOAdmin) _tieneEntrenador ? _buildChatEntrenador() : _buildMuroDePagoChat(),
+            ],
+          ),
         ),
       ),
     );
@@ -334,15 +341,18 @@ class _SocialScreenState extends State<SocialScreen> {
                         Text(post["textoCaption"] ?? "", style: const TextStyle(fontSize: 15, height: 1.5)),
                         if (tieneImagen) ...[
                           const SizedBox(height: 15),
-                          ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              // 👇 MAGIA DE LA CACHÉ APLICADA
-                              child: CachedNetworkImage(
-                                imageUrl: urlFoto,
-                                width: double.infinity, height: 200, fit: BoxFit.cover,
-                                placeholder: (context, url) => Container(height: 200, color: Colors.white10, child: Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor, strokeWidth: 2))),
-                                errorWidget: (context, url, error) => Container(height: 200, color: Colors.white10, child: const Center(child: Icon(Icons.broken_image, color: Colors.grey))),
-                              )
+                          Semantics(
+                            label: 'Foto del post',
+                            image: true,
+                            child: ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: CachedNetworkImage(
+                                  imageUrl: urlFoto,
+                                  width: double.infinity, height: 200, fit: BoxFit.cover,
+                                  placeholder: (context, url) => Container(height: 200, color: Colors.white10, child: Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor, strokeWidth: 2))),
+                                  errorWidget: (context, url, error) => Container(height: 200, color: Colors.white10, child: const Center(child: Icon(Icons.broken_image, color: Colors.grey))),
+                                )
+                            ),
                           )
                         ]
                       ],
@@ -357,6 +367,7 @@ class _SocialScreenState extends State<SocialScreen> {
           Positioned(
             bottom: 20, right: 20,
             child: FloatingActionButton(
+              tooltip: 'Crear publicación',
               backgroundColor: Theme.of(context).primaryColor,
               onPressed: _mostrarDialogoPublicar,
               child: const Icon(Icons.add, color: Colors.black),
@@ -383,7 +394,7 @@ class _SocialScreenState extends State<SocialScreen> {
               String nombreCoach = user["nombreEntrenador"] ?? "Entrena por libre";
               bool soyYo = user["idUsuario"] == _miId;
 
-              return Container(
+              return MergeSemantics(child: Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
                 decoration: BoxDecoration(
@@ -407,7 +418,7 @@ class _SocialScreenState extends State<SocialScreen> {
                     Text("$puntos pts", style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold, fontSize: 18)),
                   ],
                 ),
-              );
+              ));
             },
           ),
         ),
@@ -429,11 +440,16 @@ class _SocialScreenState extends State<SocialScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: _proximos7Dias.map((fecha) {
               bool activo = _esMismoDia(fecha, _fechaActiva);
-              return GestureDetector(
-                onTap: () => setState(() => _fechaActiva = fecha),
-                child: CircleAvatar(
-                  radius: 20, backgroundColor: activo ? Theme.of(context).primaryColor : Colors.transparent,
-                  child: Text(["L", "M", "M", "J", "V", "S", "D"][fecha.weekday - 1], style: TextStyle(color: activo ? Colors.black : Colors.grey, fontWeight: FontWeight.bold, fontSize: 16)),
+              final nombreDia = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"][fecha.weekday - 1];
+              return Semantics(
+                label: nombreDia,
+                button: true,
+                child: GestureDetector(
+                  onTap: () => setState(() => _fechaActiva = fecha),
+                  child: CircleAvatar(
+                    radius: 20, backgroundColor: activo ? Theme.of(context).primaryColor : Colors.transparent,
+                    child: Text(["L", "M", "M", "J", "V", "S", "D"][fecha.weekday - 1], style: TextStyle(color: activo ? Colors.black : Colors.grey, fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
                 ),
               );
             }).toList(),
@@ -473,6 +489,10 @@ class _SocialScreenState extends State<SocialScreen> {
                                     child: CachedNetworkImage(
                                         imageUrl: clase["imagenUrl"] ?? "",
                                         fit: BoxFit.cover, height: double.infinity,
+                                        imageBuilder: (context, imageProvider) => Semantics(
+                                          label: clase["nombre"] ?? 'Imagen de clase',
+                                          child: Image(image: imageProvider, fit: BoxFit.cover),
+                                        ),
                                         placeholder: (context, url) => Container(color: Colors.black26, child: Center(child: CircularProgressIndicator(strokeWidth: 2, color: Theme.of(context).primaryColor))),
                                         errorWidget: (context, url, error) => Container(color: Colors.black26)
                                     )
@@ -501,7 +521,7 @@ class _SocialScreenState extends State<SocialScreen> {
             padding: const EdgeInsets.all(15), color: Theme.of(context).appBarTheme.backgroundColor,
             child: Row(
                 children: [
-                  CircleAvatar(backgroundColor: Theme.of(context).primaryColor.withValues(alpha:0.2), child: Icon(Icons.sports, color: Theme.of(context).primaryColor)),
+                  ExcludeSemantics(child: CircleAvatar(backgroundColor: Theme.of(context).primaryColor.withValues(alpha:0.2), child: Icon(Icons.sports, color: Theme.of(context).primaryColor))),
                   const SizedBox(width: 15),
                   Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(_nombreCoach, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))])
                 ]
@@ -522,9 +542,9 @@ class _SocialScreenState extends State<SocialScreen> {
           decoration: BoxDecoration(color: Theme.of(context).appBarTheme.backgroundColor, border: const Border(top: BorderSide(color: Colors.white12))),
           child: Row(
             children: [
-              Expanded(child: TextField(controller: _chatController, decoration: InputDecoration(hintText: "Escribe un mensaje...", hintStyle: const TextStyle(color: Colors.grey), filled: true, fillColor: Theme.of(context).colorScheme.surface, contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none)))),
+              Expanded(child: TextField(controller: _chatController, decoration: InputDecoration(labelText: "Mensaje", hintText: "Escribe un mensaje...", hintStyle: const TextStyle(color: Colors.grey), filled: true, fillColor: Theme.of(context).colorScheme.surface, contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none)))),
               const SizedBox(width: 10),
-              CircleAvatar(backgroundColor: Theme.of(context).primaryColor, child: IconButton(icon: const Icon(Icons.send, color: Colors.black), onPressed: _enviarMensaje))
+              CircleAvatar(backgroundColor: Theme.of(context).primaryColor, child: IconButton(tooltip: 'Enviar mensaje', icon: const Icon(Icons.send, color: Colors.black), onPressed: _enviarMensaje))
             ],
           ),
         )
@@ -533,9 +553,11 @@ class _SocialScreenState extends State<SocialScreen> {
   }
 
   Widget _buildBurbujaChat(String texto, bool soyYo) {
-    return Align(
+    return Semantics(
+      label: '${soyYo ? "Tú" : _nombreCoach}: $texto',
+      child: Align(
       alignment: soyYo ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
+      child: ExcludeSemantics(child: Container(
         margin: const EdgeInsets.only(bottom: 15),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
@@ -545,6 +567,7 @@ class _SocialScreenState extends State<SocialScreen> {
         ),
         constraints: const BoxConstraints(maxWidth: 250),
         child: Text(texto, style: const TextStyle(fontSize: 14)),
+      )),
       ),
     );
   }
@@ -621,13 +644,17 @@ class ClassDetailScreen extends StatelessWidget {
               child: CachedNetworkImage(
                   imageUrl: clase["imagenUrl"] ?? "",
                   fit: BoxFit.cover,
+                  imageBuilder: (context, imageProvider) => Semantics(
+                    label: clase["nombre"] ?? 'Imagen de clase',
+                    child: Image(image: imageProvider, fit: BoxFit.cover),
+                  ),
                   placeholder: (context, url) => Container(color: Colors.black87),
                   errorWidget: (context, url, error) => const SizedBox()
               )
           ),
           Container(color: Colors.black.withValues(alpha: 0.85)),
           SafeArea(child: Padding(padding: const EdgeInsets.all(25.0), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Expanded(child: Text(clase["nombre"] ?? "", style: const TextStyle(color: Colors.white, fontSize: 38, fontWeight: FontWeight.w300), overflow: TextOverflow.ellipsis)), CircleAvatar(backgroundColor: colorVisual, child: IconButton(icon: const Icon(Icons.close, color: Colors.black), onPressed: () => Navigator.pop(context)))]),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Expanded(child: Text(clase["nombre"] ?? "", style: const TextStyle(color: Colors.white, fontSize: 38, fontWeight: FontWeight.w300), overflow: TextOverflow.ellipsis)), CircleAvatar(backgroundColor: colorVisual, child: IconButton(tooltip: 'Cerrar', icon: const Icon(Icons.close, color: Colors.black), onPressed: () => Navigator.pop(context)))]),
             const SizedBox(height: 50),
             Row(children: [
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text("HORARIO:", style: TextStyle(color: colorVisual, fontWeight: FontWeight.bold, fontSize: 16)), const SizedBox(height: 5), Text("${d.day}/${d.month}/${d.year}\n${d.hour}:${d.minute.toString().padLeft(2, '0')}", style: const TextStyle(color: Colors.white, height: 1.5, fontSize: 16)), const SizedBox(height: 30), Text("SALA:", style: TextStyle(color: colorVisual, fontWeight: FontWeight.bold, fontSize: 16)), const SizedBox(height: 5), Text(clase["sala"] ?? "", style: const TextStyle(color: Colors.white, fontSize: 16))])),

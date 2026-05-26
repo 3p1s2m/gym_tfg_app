@@ -153,7 +153,9 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> with WidgetsB
         builder: (BuildContext context) {
           return StatefulBuilder(
               builder: (context, setModalState) {
-                return Padding(
+                return FocusTraversalGroup(
+                  policy: ReadingOrderTraversalPolicy(),
+                  child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 30.0),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -198,6 +200,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> with WidgetsB
                       ),
                       const SizedBox(height: 10),
                     ],
+                  ),
                   ),
                 );
               }
@@ -361,19 +364,24 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> with WidgetsB
           foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
           actions: [
             Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(color: Theme.of(context).primaryColor.withValues(alpha:0.1), borderRadius: BorderRadius.circular(15), border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha:0.5))),
-                child: Row(
-                  children: [
-                    Icon(Icons.timer, color: Theme.of(context).primaryColor, size: 16),
-                    const SizedBox(width: 5),
-                    Text(_formatearTiempoGeneral(_segundosEntrenando), style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold, fontSize: 14, fontFeatures: const [FontFeature.tabularFigures()])),
-                  ],
+              child: Semantics(
+                label: 'Tiempo de entrenamiento: ${_formatearTiempoGeneral(_segundosEntrenando)}',
+                liveRegion: false,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(color: Theme.of(context).primaryColor.withValues(alpha:0.1), borderRadius: BorderRadius.circular(15), border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha:0.5))),
+                  child: ExcludeSemantics(child: Row(
+                    children: [
+                      Icon(Icons.timer, color: Theme.of(context).primaryColor, size: 16),
+                      const SizedBox(width: 5),
+                      Text(_formatearTiempoGeneral(_segundosEntrenando), style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold, fontSize: 14, fontFeatures: const [FontFeature.tabularFigures()])),
+                    ],
+                  )),
                 ),
               ),
             ),
             IconButton(
+              tooltip: 'Añadir ejercicio',
               icon: Icon(Icons.add_box_outlined, color: Theme.of(context).primaryColor),
               onPressed: () async {
                 final ejercicioSeleccionado = await Navigator.push(context, MaterialPageRoute(builder: (context) => const ExerciseSelectionScreen()));
@@ -402,6 +410,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> with WidgetsB
 
         // 👇 EL NUEVO BOTÓN FLOTANTE DEL TEMPORIZADOR MANUAL
         floatingActionButton: FloatingActionButton.extended(
+          tooltip: _descansoActivo ? 'Descanso activo, toca para ajustar' : 'Iniciar tiempo de descanso',
           backgroundColor: _descansoActivo ? Colors.orange : Theme.of(context).primaryColor,
           onPressed: _mostrarPanelDescanso,
           icon: Icon(_descansoActivo ? Icons.timer : Icons.timer_outlined, color: Colors.black),
@@ -411,7 +420,9 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> with WidgetsB
           ),
         ),
 
-        body: _cargandoFantasma
+        body: FocusTraversalGroup(
+          policy: ReadingOrderTraversalPolicy(),
+          child: _cargandoFantasma
             ? Center(child: CircularProgressIndicator(color: Theme.of(context).primaryColor))
             : ReorderableListView.builder(
           padding: const EdgeInsets.only(left: 15, right: 15, top: 15, bottom: 80),
@@ -441,8 +452,8 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> with WidgetsB
                       const SizedBox(width: 15),
                       Expanded(child: Text(ejercicio["ejercicio"], style: const TextStyle(fontWeight: FontWeight.bold))),
                       if (ejercicio["datosCompletos"] != null)
-                        IconButton(icon: const Icon(Icons.info_outline, color: Colors.grey), onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => EjercicioDetalleScreen(ejercicio: ejercicio["datosCompletos"])))),
-                      IconButton(icon: const Icon(Icons.delete_outline, color: Colors.redAccent), onPressed: () => _confirmarBorradoEjercicio(indexEjer)),
+                        IconButton(tooltip: 'Ver información del ejercicio', icon: const Icon(Icons.info_outline, color: Colors.grey), onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => EjercicioDetalleScreen(ejercicio: ejercicio["datosCompletos"])))),
+                      IconButton(tooltip: 'Eliminar ejercicio', icon: const Icon(Icons.delete_outline, color: Colors.redAccent), onPressed: () => _confirmarBorradoEjercicio(indexEjer)),
                     ],
                   ),
                   subtitle: Padding(
@@ -482,13 +493,13 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> with WidgetsB
                                 child: Row(
                                   children: [
                                     SizedBox(width: 35, child: Container(alignment: Alignment.center, child: Text("${indexSerie + 1}"))),
-                                    SizedBox(width: 65, child: _buildMiniInputBox(serie["peso"], serie["peso_previo"], (val) => serie["peso"] = val)),
-                                    SizedBox(width: 65, child: _buildMiniInputBox(serie["reps"], serie["reps_previas"], (val) => serie["reps"] = val)),
-                                    SizedBox(width: 55, child: _buildMiniInputBox(serie["rir"], "-", (val) => serie["rir"] = val)),
-                                    SizedBox(width: 55, child: _buildMiniInputBox(serie["rpe"] ?? "", "-", (val) => serie["rpe"] = val)),
+                                    SizedBox(width: 65, child: _buildMiniInputBox(serie["peso"], serie["peso_previo"], (val) => serie["peso"] = val, labelText: 'Peso en kg')),
+                                    SizedBox(width: 65, child: _buildMiniInputBox(serie["reps"], serie["reps_previas"], (val) => serie["reps"] = val, labelText: 'Repeticiones')),
+                                    SizedBox(width: 55, child: _buildMiniInputBox(serie["rir"], "-", (val) => serie["rir"] = val, labelText: 'RIR')),
+                                    SizedBox(width: 55, child: _buildMiniInputBox(serie["rpe"] ?? "", "-", (val) => serie["rpe"] = val, labelText: 'RPE')),
                                     SizedBox(
                                       width: 50,
-                                      child: Center(child: Checkbox(value: estaCompletada, activeColor: Theme.of(context).primaryColor, checkColor: Colors.black, onChanged: (val) => setState(() => serie["completada"] = val))),
+                                      child: Center(child: Semantics(label: 'Serie ${indexSerie + 1} ${estaCompletada ? "completada" : "pendiente"}', child: Checkbox(value: estaCompletada, activeColor: Theme.of(context).primaryColor, checkColor: Colors.black, onChanged: (val) => setState(() => serie["completada"] = val)))),
                                     ),
                                   ],
                                 ),
@@ -512,11 +523,12 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> with WidgetsB
             );
           },
         ),
+        ),
       ),
     );
   }
 
-  Widget _buildMiniInputBox(String valorInicial, String? hint, Function(String) onChanged) {
+  Widget _buildMiniInputBox(String valorInicial, String? hint, Function(String) onChanged, {String? labelText}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4.0),
       child: TextFormField(
@@ -525,6 +537,8 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> with WidgetsB
         textAlign: TextAlign.center,
         style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 16, fontWeight: FontWeight.bold),
         decoration: InputDecoration(
+          labelText: labelText,
+          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha:0.5), fontSize: 11),
           hintText: (hint != null && hint.isNotEmpty) ? hint : "-",
           hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha:0.3), fontSize: 14),
           contentPadding: const EdgeInsets.symmetric(vertical: 10),

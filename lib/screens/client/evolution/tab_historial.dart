@@ -195,7 +195,7 @@ class _TabHistorialState extends State<TabHistorial> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("🔥", style: TextStyle(fontSize: 24)), const SizedBox(width: 10),
+                  Semantics(label: "Racha activa", child: ExcludeSemantics(child: const Text("🔥", style: TextStyle(fontSize: 24)))), const SizedBox(width: 10),
                   Text("${_calcularRachaSemanas()} Semanas seguidas", style: const TextStyle(color: Colors.orangeAccent, fontSize: 16, fontWeight: FontWeight.bold)),
                 ],
               ),
@@ -204,7 +204,10 @@ class _TabHistorialState extends State<TabHistorial> {
           Container(
             margin: const EdgeInsets.all(15),
             decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(20), border: Border.all(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1))),
-            child: TableCalendar(
+            child: Semantics(
+              label: 'Calendario de entrenamientos',
+              container: true,
+              child: TableCalendar(
               firstDay: DateTime.utc(2020, 1, 1), lastDay: DateTime.utc(2030, 12, 31), focusedDay: _mesEnfocado, calendarFormat: CalendarFormat.month, startingDayOfWeek: StartingDayOfWeek.monday,
               headerStyle: HeaderStyle(formatButtonVisible: false, titleTextStyle: TextStyle(color: Theme.of(context).primaryColor, fontSize: 18, fontWeight: FontWeight.bold), leftChevronIcon: Icon(Icons.chevron_left, color: Theme.of(context).colorScheme.onSurface), rightChevronIcon: Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.onSurface)),
               daysOfWeekStyle: DaysOfWeekStyle(weekdayStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)), weekendStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))),
@@ -217,6 +220,7 @@ class _TabHistorialState extends State<TabHistorial> {
               eventLoader: (dia) => _entrenamientosPorDia.containsKey(DateTime.utc(dia.year, dia.month, dia.day)) ? ['entreno'] : [],
               selectedDayPredicate: (dia) => isSameDay(_diaSeleccionado, dia),
               onDaySelected: (diaSeleccionado, mesEnfocado) => setState(() { _diaSeleccionado = diaSeleccionado; _mesEnfocado = mesEnfocado; }),
+            ),
             ),
           ),
 
@@ -306,7 +310,10 @@ class _TabHistorialState extends State<TabHistorial> {
                   borderRadius: BorderRadius.circular(10),
                   borderColor: Colors.white12,
                   selectedBorderColor: Theme.of(context).primaryColor,
-                  children: const [Padding(padding: EdgeInsets.symmetric(horizontal: 15), child: Text("Músculo")), Padding(padding: EdgeInsets.symmetric(horizontal: 15), child: Text("Ejercicio"))],
+                  children: [
+                    Semantics(label: "Filtrar por Músculo, ${_modoAnalizador == 'Músculo' ? 'seleccionado' : 'no seleccionado'}", child: const Padding(padding: EdgeInsets.symmetric(horizontal: 15), child: Text("Músculo"))),
+                    Semantics(label: "Filtrar por Ejercicio, ${_modoAnalizador == 'Ejercicio' ? 'seleccionado' : 'no seleccionado'}", child: const Padding(padding: EdgeInsets.symmetric(horizontal: 15), child: Text("Ejercicio"))),
+                  ],
                 ),
                 const SizedBox(width: 15),
                 Expanded(
@@ -407,7 +414,7 @@ class _TabHistorialState extends State<TabHistorial> {
       colorIndex++;
     });
 
-    return Column(children: [Text("Simetría Muscular (Porcentaje de Series)", style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold)), const SizedBox(height: 20), SizedBox(height: 150, child: PieChart(PieChartData(sections: secciones, centerSpaceRadius: 40, sectionsSpace: 2))), const SizedBox(height: 20), Wrap(alignment: WrapAlignment.center, children: leyenda)]);
+    return Column(children: [Text("Simetría Muscular (Porcentaje de Series)", style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold)), const SizedBox(height: 20), Semantics(label: 'Gráfica de evolución. Usa la lista de datos para ver los valores.', child: ExcludeSemantics(child: SizedBox(height: 150, child: PieChart(PieChartData(sections: secciones, centerSpaceRadius: 40, sectionsSpace: 2))))), const SizedBox(height: 20), Wrap(alignment: WrapAlignment.center, children: leyenda)]);
   }
 
   Widget _buildGraficoEvolucion(String modo) {
@@ -473,23 +480,28 @@ class _TabHistorialState extends State<TabHistorial> {
     if (_metricaAnalizador == "Series") sufijo = "sets";
     if (_metricaAnalizador == "Repeticiones") sufijo = "reps";
 
-    return LineChart(
-      LineChartData(
-        gridData: const FlGridData(show: false), titlesData: const FlTitlesData(show: false), borderData: FlBorderData(show: false),
-        lineTouchData: LineTouchData(
-          touchSpotThreshold: 30,
-          touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (touchedSpot) => Colors.black87, fitInsideHorizontally: true, fitInsideVertically: true,
-            getTooltipItems: (touchedSpots) {
-              return touchedSpots.map((spot) {
-                var data = datosTooltip[spot.x.toInt()];
-                String textoPrincipal = "${data["valor"].toStringAsFixed(1)} $sufijo";
-                return LineTooltipItem("$textoPrincipal\n", TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold, fontSize: 13), children: [TextSpan(text: data["fecha"], style: const TextStyle(color: Colors.grey, fontSize: 10))]);
-              }).toList();
-            },
+    return Semantics(
+      label: 'Gráfica de evolución. Usa la lista de datos para ver los valores.',
+      child: ExcludeSemantics(
+        child: LineChart(
+          LineChartData(
+            gridData: const FlGridData(show: false), titlesData: const FlTitlesData(show: false), borderData: FlBorderData(show: false),
+            lineTouchData: LineTouchData(
+              touchSpotThreshold: 30,
+              touchTooltipData: LineTouchTooltipData(
+                getTooltipColor: (touchedSpot) => Colors.black87, fitInsideHorizontally: true, fitInsideVertically: true,
+                getTooltipItems: (touchedSpots) {
+                  return touchedSpots.map((spot) {
+                    var data = datosTooltip[spot.x.toInt()];
+                    String textoPrincipal = "${data["valor"].toStringAsFixed(1)} $sufijo";
+                    return LineTooltipItem("$textoPrincipal\n", TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold, fontSize: 13), children: [TextSpan(text: data["fecha"], style: const TextStyle(color: Colors.grey, fontSize: 10))]);
+                  }).toList();
+                },
+              ),
+            ),
+            lineBarsData: [LineChartBarData(spots: puntos, isCurved: true, color: Theme.of(context).primaryColor, barWidth: 3, dotData: FlDotData(show: true, getDotPainter: (spot, p, b, i) => FlDotCirclePainter(radius: 4, color: Theme.of(context).primaryColor, strokeWidth: 1, strokeColor: Colors.black)), belowBarData: BarAreaData(show: true, color: Theme.of(context).primaryColor.withValues(alpha:0.2)))],
           ),
         ),
-        lineBarsData: [LineChartBarData(spots: puntos, isCurved: true, color: Theme.of(context).primaryColor, barWidth: 3, dotData: FlDotData(show: true, getDotPainter: (spot, p, b, i) => FlDotCirclePainter(radius: 4, color: Theme.of(context).primaryColor, strokeWidth: 1, strokeColor: Colors.black)), belowBarData: BarAreaData(show: true, color: Theme.of(context).primaryColor.withValues(alpha:0.2)))],
       ),
     );
   }

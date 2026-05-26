@@ -253,7 +253,11 @@ class _SuenoScreenState extends State<SuenoScreen> {
   }
 
   Widget _buildSelectorHora(String label, TimeOfDay hora, bool esInicio, Color color) {
-    return GestureDetector(
+    final horaFormateada = '${hora.hour.toString().padLeft(2, '0')}:${hora.minute.toString().padLeft(2, '0')}';
+    return Semantics(
+      label: "$label: $horaFormateada, toca para cambiar",
+      button: true,
+      child: GestureDetector(
       onTap: () => _seleccionarHora(esInicio),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -272,6 +276,7 @@ class _SuenoScreenState extends State<SuenoScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -342,6 +347,7 @@ class _SuenoScreenState extends State<SuenoScreen> {
                     ),
                   ),
                   IconButton(
+                    tooltip: 'Eliminar registro de sueño',
                     icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
                     onPressed: () => _borrarRegistro(id),
                   ),
@@ -388,6 +394,7 @@ class _SuenoScreenState extends State<SuenoScreen> {
             divisions: 8,
             activeColor: const Color(0xFF6C63FF),
             label: '${_horasObjetivo.toStringAsFixed(1)}h',
+            semanticFormatterCallback: (v) => '${v.toStringAsFixed(0)} horas',
             onChanged: (val) => setState(() => _horasObjetivo = val),
           ),
           _buildRecomendacionPorObjetivo(),
@@ -431,7 +438,18 @@ class _SuenoScreenState extends State<SuenoScreen> {
 
     final diasSemana = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
-    return Container(
+    final resumenSemanal = _registrosSemana.map((r) {
+      final h = (r['horasDormidas'] ?? 0).toDouble();
+      final f = r['fecha']?.toString() ?? '';
+      final d = DateTime.tryParse(f);
+      final etq = d != null ? ['lunes','martes','miércoles','jueves','viernes','sábado','domingo'][d.weekday - 1] : '';
+      return '$etq ${h.toStringAsFixed(1)} horas';
+    }).join(', ');
+
+    return Semantics(
+      label: 'Gráfica semanal de sueño. $resumenSemanal',
+      excludeSemantics: false,
+      child: Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -441,12 +459,14 @@ class _SuenoScreenState extends State<SuenoScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
-            children: [
+          ExcludeSemantics(
+            child: Row(
+            children: const [
               Icon(Icons.bar_chart, color: Color(0xFF6C63FF), size: 18),
               SizedBox(width: 8),
               Text('SUEÑO ESTA SEMANA', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 1)),
             ],
+          ),
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -499,6 +519,7 @@ class _SuenoScreenState extends State<SuenoScreen> {
             ],
           ),
         ],
+      ),
       ),
     );
   }

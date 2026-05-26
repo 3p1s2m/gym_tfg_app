@@ -87,6 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return [
         Positioned.fill(
           child: IgnorePointer(
+            child: ExcludeSemantics(
             child: ColorFiltered(
               colorFilter: ColorFilter.mode(colorPintar.withValues(alpha: 0.85), BlendMode.srcIn),
               child: Image.asset(
@@ -97,6 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
               ),
             ),
+          ),
           ),
         )
       ];
@@ -163,7 +165,9 @@ class _HomeScreenState extends State<HomeScreen> {
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: AppBar(title: const Text('SYMMETRY', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2.0)), backgroundColor: Theme.of(context).appBarTheme.backgroundColor, foregroundColor: Theme.of(context).appBarTheme.foregroundColor, elevation: 0, centerTitle: true),
-          body: Column(
+          body: FocusTraversalGroup(
+            policy: ReadingOrderTraversalPolicy(),
+            child: Column(
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 25),
@@ -181,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        Positioned.fill(child: GestureDetector(onTap: () => setState(() => _esFrente = !_esFrente), child: Image.asset(rutaCuerpoBase, fit: BoxFit.contain))),
+                        Positioned.fill(child: Semantics(label: _esFrente ? "Vista frontal del cuerpo, toca para ver espalda" : "Vista trasera del cuerpo, toca para ver frente", child: GestureDetector(onTap: () => setState(() => _esFrente = !_esFrente), child: Image.asset(rutaCuerpoBase, fit: BoxFit.contain)))),
                         if (_esFrente) ...[
                           // 👇 Usamos los nombres simples de las imágenes antiguas:
                           ..._buildCapaIA('pectoral', _rangoPectoral, generoVisual),
@@ -210,6 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const Padding(padding: EdgeInsets.only(bottom: 20.0), child: Text("Toca un músculo para evaluar. Toca el fondo para girar.", style: TextStyle(color: Colors.grey, fontSize: 11))),
             ],
+            ),
           ),
         );
       },
@@ -220,20 +225,20 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildGemaMini('assets/images/gema_bronce.png'),
-        _buildGemaMini('assets/images/gema_plata.png'),
-        _buildGemaMini('assets/images/gema_oro.png'),
-        _buildGemaMini('assets/images/gema_diamante.png'),
-        _buildGemaMini('assets/images/gema_elite.png'),
+        _buildGemaMini('assets/images/gema_bronce.png', 'Gema Bronce'),
+        _buildGemaMini('assets/images/gema_plata.png', 'Gema Plata'),
+        _buildGemaMini('assets/images/gema_oro.png', 'Gema Oro'),
+        _buildGemaMini('assets/images/gema_diamante.png', 'Gema Diamante'),
+        _buildGemaMini('assets/images/gema_elite.png', 'Gema Elite'),
       ],
     );
   }
 
-  Widget _buildGemaMini(String ruta) {
-    return Transform.scale(scale: 2, child: Image.asset(ruta, height: 40, fit: BoxFit.contain, errorBuilder: (c,e,s) => const SizedBox()));
+  Widget _buildGemaMini(String ruta, String semanticsLabel) {
+    return Transform.scale(scale: 2, child: Image.asset(ruta, height: 40, fit: BoxFit.contain, semanticLabel: semanticsLabel, errorBuilder: (c,e,s) => const SizedBox()));
   }
 
   Widget _buildHitboxInvisible(String nombre, double top, double left, double width, double height) {
-    return Positioned(top: top, left: left, child: GestureDetector(onTap: () => _mostrarOpcionesImagen(nombre), child: Container(width: width, height: height, color: Colors.transparent)));
+    return Positioned(top: top, left: left, child: Semantics(label: "$nombre, toca para evaluar músculo", button: true, child: GestureDetector(onTap: () => _mostrarOpcionesImagen(nombre), child: Container(width: width, height: height, color: Colors.transparent))));
   }
 }
